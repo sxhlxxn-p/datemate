@@ -1,6 +1,7 @@
 # DateMate — ML Team Project
 
-서울·수도권 데이트 장소 추천을 위한 팀 공통 전처리·CBF/CF/Hybrid 실험 준비 저장소입니다. 공통 데이터 생성은 구현되어 있으며 **추천 모델 학습과 성능 검증은 아직 진행 전**입니다. 실험 설정은 모델 구현체가 아닙니다.
+서울·수도권 데이트 장소 추천 프로젝트 리포지토리. 공통 데이터 생성은 구현되어 있으며 **추천 모델 학습과 성능 검증은 아직 진행 전**입니다. -->역할 정해서 진행하면 될 거 같습니다.
+실험 설정은 모델 구현체가 아닙니다.
 
 ## 먼저 실행하기 — 실제 데이터 없이
 
@@ -18,13 +19,14 @@ python scripts/build_common_dataset.py --data-dir outputs/synthetic_source --out
 python scripts/validate_common_dataset.py --input-dir outputs/synthetic_processed
 ```
 
-가상 샘플은 코드로 생성하며 AI-Hub 기록을 복사하거나 변형한 것이 아닙니다. 샘플 성공은 실제 데이터의 성능이나 품질을 의미하지 않습니다.
+가상 샘플은 코드로 생성하며 AI-Hub 기록을 복사하거나 변형해 만들지는 않아서 샘플 성공이 실제 데이터의 성능이나 품질을 의미하지 않습니다.
 
 ## 실제 데이터 준비 및 재현
 
-1. 각 팀원이 AI-Hub에서 국내 여행로그 데이터(수도권) 2022·2023 자료의 이용 신청·승인을 받아 직접 다운로드합니다. [데이터 준비 및 이용 조건](docs/data_access.md)을 먼저 읽으세요.
-2. [data/README.md](data/README.md)의 폴더 구조로 압축 해제합니다. 파일명·크기는 [manifest](docs/data_manifest.json)에 있습니다.
-3. 다음 명령으로 검사하고 생성합니다.
+1. 각 팀원이 AI-Hub에서 국내 여행로그 데이터(수도권) 2022·2023 자료의 이용 신청·승인을 받아 직접 다운로드합니다.
+   [데이터 준비 및 이용 조건](docs/data_access.md)해서 확인 가능합니다. 
+3. [data/README.md](data/README.md)의 폴더 구조로 압축 해제합니다. 파일명·크기는 [manifest](docs/data_manifest.json)에 있습니다.
+4. 다음 명령으로 검사하고 생성합니다.
 
 ```sh
 python scripts/check_data.py
@@ -47,11 +49,11 @@ python scripts/validate_common_dataset.py
 - Hybrid 담당: validation에서만 가중치 조정, CF 불가 시 CBF fallback. CBF/CF 점수 척도 보정도 train/validation만 사용.
 - 공통 담당: 인기순·평균 기준선, 동일 후보 집합 및 평가 분모 확정, 코드·설정·환경·집계 지표 통합.
 
-실제 커플 공동 만족도 정답은 없습니다. 개인 추천 평가와 가상 사용자 쌍 시연을 분리합니다. 상세 작업·최종 산출물은 [협업 안내](CONTRIBUTING.md)를 따르세요.
+실제 커플 공동 만족도 정답은 없습니다. 개인 추천 평가와 가상 사용자 쌍 시연을 분리합니다. 상세 작업·최종 산출물은 [협업 안내](CONTRIBUTING.md)참고해주세요.
 
 ## 저장소 내용과 데이터 보호
 
-코드·문서·설정·집계 통계만 공유합니다. 원본 8.5GB, ZIP, 실제 방문/프로필/장소 CSV, 모델 파일, 노트북 출력, 문서 원본, API 키는 업로드하지 않습니다. 원본 식별자에 연도를 붙인 user_id는 가명 키이며 익명성 보장을 뜻하지 않습니다. private 저장소도 데이터 재배포 수단으로 사용하지 않습니다.
+코드·문서·설정·집계 통계만 공유합니다. 원본 8.5GB, ZIP, 실제 방문/프로필/장소 CSV, 모델 파일, 노트북 출력, 문서 원본, API 키는 업로드하지 않습니다. 원본 식별자에 연도를 붙인 user_id는 가명 키입니다.
 
 - [공통 스키마와 분할](docs/data_spec.md)
 - [초기 EDA 및 공통 구조 보고서](reports/dataset_validation.md)
