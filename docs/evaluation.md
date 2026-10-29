@@ -1,6 +1,6 @@
-# 공통 실험 및 평가 명세 v1.0
+# 실험·평가 기준
 
-이 문서는 모델 구현 전 팀 공통 실험 계약이다. 설정은 `configs/experiment.json`으로 고정한다. 기존 `data_spec.md`의 키·분할과 누수 방지 기준을 변경하지 않는다. 모델 성능 결과가 아니다.
+모든 모델은 아래 분할·후보·지표를 맞춰 비교한다. 설정은 `configs/experiment.json`, 데이터 구조는 `data_spec.md`를 참고한다.
 
 ## 실험 구분
 
@@ -25,7 +25,7 @@ TF-IDF, 정규화, 평균, 인기, 이웃, 가중치 보정과 후보 선별 통
 - users: interaction_count.
 - user_id, travel_id, interaction_id, 원본 분할은 키/감사용이며 내용 특성이 아니다. CF의 user/item 인덱스는 허용한다.
 
-**카탈로그 한계:** 기존 장소 통합과 대표 이름·주소·방문 유형은 두 연도 전체 방문에서 계산한다. 따라서 현재 산출물은 전체 기간 카탈로그를 이용한 탐색적 평가다. 미래 시점까지 완전히 차단된 실험이라고 주장할 수 없다. train에 등장한 장소만 후보로 제한해도 이 한계가 완전히 없어지지는 않는다. 엄격한 inductive/시간 이동 주장에는 train 시점 장소 통합 및 당시 이용 가능한 독립 카탈로그를 다시 구성하는 별도 전처리가 필요하다. 현재 스키마·기준 수치를 보존하기 위해 여기서는 그 재구성을 수행하지 않는다.
+장소 통합과 대표 이름·주소·방문 유형은 두 연도 전체 로그에서 정했다. train 장소로 후보를 제한해도 이 과정에 평가 시점의 정보가 포함될 수 있다. 현재 실험은 전체기간 카탈로그를 쓰는 비교로 해석한다. 엄격한 시점별 평가를 하려면 train 시점의 장소 통합과 당시 이용 가능한 카탈로그를 따로 구성해야 한다.
 
 ## 동일 조건의 지표
 
@@ -39,8 +39,8 @@ TF-IDF, 정규화, 평균, 인기, 이웃, 가중치 보정과 후보 선별 통
 
 기준선은 global mean, train item mean(미지원 시 global mean), train 사용자–장소 쌍 빈도 기반 popularity다. 후보와 전처리를 바꾼 비교는 별도 실험이다. seed=42, 단일 실행 결과와 여러 seed 평균을 혼동하지 않는다.
 
-## 결과 인터페이스
+## 결과 저장
 
 로컬 `outputs/experiments/<protocol>/<model>/`에 config.json, metrics.json, predictions.csv, environment.txt를 보관한다. predictions.csv는 user_id, place_id, score, split, year이며 순위 전체 후보 점수를 기록한다. 행 단위 예측·프로필·학습 모델은 Git에 올리지 않는다.
 
-공유 결과 JSON은 모델명, Git commit, 설정 해시, 로컬 데이터 산출물 SHA-256, Python/패키지 버전, seed, 연도/분할, train 쌍 수, 평가 쌍·사용자 수, warm/cold 분모, 후보 수, MAE/RMSE/NDCG@10/Recall@10/coverage, 실행 시간의 집계만 포함한다. 아직 결과가 없을 때 수치를 채우지 않는다. 구현자는 이 계약에 맞는 evaluator를 함께 제출하며 기준선과 동일 후보·분모인지 검토받는다.
+공유 결과 JSON은 모델명, Git commit, 설정 해시, 로컬 데이터 산출물 SHA-256, Python/패키지 버전, seed, 연도/분할, train 쌍 수, 평가 쌍·사용자 수, warm/cold 분모, 후보 수, MAE/RMSE/NDCG@10/Recall@10/coverage, 실행 시간의 집계만 포함한다. 평가 코드도 함께 공유하고, 기준선과 후보·분모가 같은지 확인한다.

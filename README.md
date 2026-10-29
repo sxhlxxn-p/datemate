@@ -1,11 +1,11 @@
-# DateMate — ML Team Project
+# DateMate
 
-서울·수도권 데이트 장소 추천 프로젝트 리포지토리. 공통 데이터 생성은 구현되어 있으며 **추천 모델 학습과 성능 검증은 아직 진행 전**입니다. -->역할 정해서 진행하면 될 거 같습니다.
-실험 설정=/ 모델 구현체
+서울·수도권 데이트 장소 추천 프로젝트. AI-Hub 여행로그 2022·2023 데이터를 사용한다.
+현재 공통 전처리까지 완료했다. 역할을 정한 뒤 이 데이터를 기준으로 CBF·CF·Hybrid를 구현하고 비교하면 된다.
 
-## 먼저 실행하기 — 실제 데이터 없이
+## 실행 환경
 
-Python 3.10 이상을 사용합니다. 공통 전처리와 검증은 표준 라이브러리만 사용합니다.
+Python 3.10 이상.
 
 ```sh
 git clone https://github.com/sxhlxxn-p/datemate.git
@@ -13,20 +13,11 @@ cd datemate
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-python -m unittest discover -s tests -v
-python scripts/make_synthetic_data.py
-python scripts/build_common_dataset.py --data-dir outputs/synthetic_source --output-dir outputs/synthetic_processed --spec-path outputs/synthetic_processed/data_spec.generated.md --skip-poi-master
-python scripts/validate_common_dataset.py --input-dir outputs/synthetic_processed
 ```
 
-가상 샘플은 코드로 생성하며 AI-Hub 기록을 복사하거나 변형해 만들지는 않아서 샘플 성공이 실제 데이터의 성능이나 품질을 의미하지 않습니다.
+## 데이터 준비와 전처리
 
-## 실제 데이터 준비 및 재현
-
-1. 각 팀원이 AI-Hub에서 국내 여행로그 데이터(수도권) 2022·2023 자료의 이용 신청·승인을 받아 직접 다운로드합니다.
-   [데이터 준비 및 이용 조건](docs/data_access.md)해서 확인 가능합니다. 
-3. [data/README.md](data/README.md)의 폴더 구조로 압축 해제합니다. 파일명·크기는 [manifest](docs/data_manifest.json)에 있습니다.
-4. 다음 명령으로 검사하고 생성합니다.
+각자 AI-Hub에서 이용 승인 후 데이터를 내려받아 `data/`에 넣는다. 폴더 구성은 [데이터 준비 안내](data/README.md)를 참고한다. 원본과 전처리 결과는 GitHub에 올리지 않는다.
 
 ```sh
 python scripts/check_data.py
@@ -34,31 +25,50 @@ python scripts/build_common_dataset.py
 python scripts/validate_common_dataset.py
 ```
 
-외부 데이터 위치도 지원합니다. 기존 원본 폴더를 사용할 경우 check_data.py와 build_common_dataset.py에 각각 `--data-dir "/absolute/path/to/data"`를 지정하세요. 기본 생성 위치는 `outputs/processed/`입니다. POI master 전체 스캔이 포함되므로 시간이 걸립니다. `--skip-poi-master`는 빠른 진단용이며 공식 전체 실행 결과와 비교하지 않습니다.
+다른 위치에 데이터가 있으면 앞의 두 명령에 `--data-dir "/path/to/data"`를 붙인다. `check_data.py`는 최초 확보한 전체 파일 목록을 검사하므로 중복 TS/VS 파일까지 확인한다. 전처리에는 TL/VL과 POI master만 사용한다.
 
-생성물은 `interactions.csv`, `places.csv`, `users.csv`, `quality_report.json`, `source_inventory.csv`, `data_spec.generated.md`입니다. 검토된 [공통 명세](docs/data_spec.md)는 자동 덮어쓰지 않습니다. 원본 data 아래로 출력하는 경로는 거부합니다.
+결과는 `outputs/processed/`에 생성된다.
 
-기존 검증 보고서의 기준은 상호작용 **29,485행**, 장소 **34,671개**, 후보 **16,764개**입니다. 실제 재현 확인 결과는 [검증 기록](docs/verification.md)에 기록합니다. 과거 EDA 수치와 정제 후 공통 데이터 수치를 구분하세요.
+| 파일 | 내용 |
+|---|---|
+| `interactions.csv` | 사용자–장소 평점과 평가 분할 |
+| `places.csv` | 장소 정보와 추천 후보 여부 |
+| `users.csv` | 사용자 프로필 |
+| `quality_report.json` | 조인 누락, 제외 사유, 분할 통계 |
+| `source_inventory.csv` | 입력 CSV 목록과 스키마 |
+| `data_spec.generated.md` | 해당 실행의 데이터 명세 |
 
-## 모델 실험 시작
+전체 실행 기준 상호작용 29,485행, 장소 34,671개, 추천 후보 16,764개다. POI master를 읽는 데 시간이 걸린다. `--skip-poi-master`는 빠른 확인용이며 전체 실행과 결과가 다를 수 있다.
 
-[평가 명세](docs/evaluation.md)와 [공통 설정](configs/experiment.json)을 모든 모델에서 공유합니다. 첫 비교는 2022 known-user train/validation/test로 진행합니다. 2023 within-year 평가는 별도 표에, 2022→2023 cold-user 평가는 별도 실험으로 보고합니다.
+## 실험 진행
 
-- CBF 담당: 이름 TF-IDF, 방문 유형, 지역·좌표 기반 점수. 사전과 스케일러는 train에서만 학습.
-- CF 담당: item-based KNN, 이웃 수·지원도와 추천 가능 비율 보고.
-- Hybrid 담당: validation에서만 가중치 조정, CF 불가 시 CBF fallback. CBF/CF 점수 척도 보정도 train/validation만 사용.
-- 공통 담당: 인기순·평균 기준선, 동일 후보 집합 및 평가 분모 확정, 코드·설정·환경·집계 지표 통합.
+모델 입력은 위 공통 데이터로 통일한다. `scripts/eda.py`의 초기 분석 결과는 모델 입력으로 쓰지 않는다.
 
-실제 커플 공동 만족도 정답은 없습니다. 개인 추천 평가와 가상 사용자 쌍 시연을 분리합니다. 상세 작업·최종 산출물은 [협업 안내](CONTRIBUTING.md)참고해주세요.
+1. 2022의 `known_user_split`으로 먼저 비교한다. `train`·`train_only`로 학습하고 `validation`으로 튜닝한 뒤 `test`로 평가한다.
+2. 전체평균·장소평균·인기순을 기준선으로 두고 CBF, item-KNN CF, Hybrid를 비교한다.
+3. MAE/RMSE, NDCG@10/Recall@10, 추천 가능 비율과 coverage를 함께 기록한다.
+4. 2023 연도 내 실험과 2022→2023 평가는 별도로 정리한다.
 
-## 저장소 내용과 데이터 보호
+반복 방문 집계는 분할 후에 한다. TF-IDF·스케일러·평균·인기도는 train에서만 계산한다. `places.csv`의 전체기간 평균 평점·방문 수와 `users.csv`의 `interaction_count`는 입력 특성에서 제외한다.
 
-코드·문서·설정·집계 통계만 공유합니다. 원본 8.5GB, ZIP, 실제 방문/프로필/장소 CSV, 모델 파일, 노트북 출력, 문서 원본, API 키는 업로드하지 않습니다. 원본 식별자에 연도를 붙인 user_id는 가명 키입니다.
+후보 집합과 지표 계산은 [평가 기준](docs/evaluation.md), 파라미터 범위는 [실험 설정](configs/experiment.json)을 따른다. 역할별 작업과 PR에 넣을 내용은 [협업 안내](CONTRIBUTING.md)에 정리했다.
 
-- [공통 스키마와 분할](docs/data_spec.md)
-- [초기 EDA 및 공통 구조 보고서](reports/dataset_validation.md)
-- [평가와 누수 방지 규칙](docs/evaluation.md)
-- [데이터 출처·권한](docs/data_access.md)
-- [로컬·원격 검증 기록](docs/verification.md)
+## 데이터 없이 동작 확인
 
-기존 `scripts/eda.py`는 감사용 초기 EDA입니다. 그 결과를 모델 입력으로 사용하지 마세요. 원본 출처 Training/Validation은 최종 평가 분할이 아닙니다. 배포 코드에 별도 오픈소스 라이선스를 부여하지 않았으며 AI-Hub 데이터의 이용 조건은 별도로 적용됩니다.
+아래 샘플은 실제 기록을 사용하지 않은 가상 데이터다. 공통 전처리는 별도 패키지 없이 실행된다.
+
+```sh
+python -m unittest discover -s tests -v
+python scripts/make_synthetic_data.py
+python scripts/build_common_dataset.py --data-dir outputs/synthetic_source --output-dir outputs/synthetic_processed --spec-path outputs/synthetic_processed/data_spec.generated.md --skip-poi-master
+python scripts/validate_common_dataset.py --input-dir outputs/synthetic_processed
+```
+
+## 참고
+
+- [공통 데이터 명세](docs/data_spec.md)
+- [데이터 검증 보고서](reports/dataset_validation.md)
+- [재현 확인 결과](docs/verification.md)
+- [데이터 이용 안내](docs/data_access.md)
+
+실제 커플의 공동 만족도 정답은 없어 개인 추천 평가와 사용자 쌍 시연은 구분한다. 장소 정보는 전체기간 로그로 통합했으므로 엄격한 시점별 평가에는 추가 전처리가 필요하다. 자세한 범위는 평가 기준에 적었다.
