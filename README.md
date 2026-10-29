@@ -32,7 +32,7 @@ python scripts/build_common_dataset.py
 python scripts/validate_common_dataset.py
 ```
 
-외부 데이터 위치도 지원합니다. 기존 원본 폴더를 사용할 경우 `--data-dir "/absolute/path/to/data"`를 지정하세요. 기본 생성 위치는 `outputs/processed/`입니다. POI master 전체 스캔이 포함되므로 시간이 걸립니다. `--skip-poi-master`는 빠른 진단용이며 공식 전체 실행 결과와 비교하지 않습니다.
+외부 데이터 위치도 지원합니다. 기존 원본 폴더를 사용할 경우 check_data.py와 build_common_dataset.py에 각각 `--data-dir "/absolute/path/to/data"`를 지정하세요. 기본 생성 위치는 `outputs/processed/`입니다. POI master 전체 스캔이 포함되므로 시간이 걸립니다. `--skip-poi-master`는 빠른 진단용이며 공식 전체 실행 결과와 비교하지 않습니다.
 
 생성물은 `interactions.csv`, `places.csv`, `users.csv`, `quality_report.json`, `source_inventory.csv`, `data_spec.generated.md`입니다. 검토된 [공통 명세](docs/data_spec.md)는 자동 덮어쓰지 않습니다. 원본 data 아래로 출력하는 경로는 거부합니다.
 
