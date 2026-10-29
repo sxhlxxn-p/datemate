@@ -1,0 +1,157 @@
+{
+  "global_joins": {
+    "2022_train": {
+      "missing_trip": 3155,
+      "missing_profile": 5826
+    },
+    "2022_validation": {
+      "missing_trip": 391,
+      "missing_profile": 710
+    },
+    "2023_train": {
+      "missing_trip": 0,
+      "missing_profile": 0
+    },
+    "2023_validation": {
+      "missing_trip": 0,
+      "missing_profile": 0
+    }
+  },
+  "2022": {
+    "rows": 20167,
+    "pairs": 18236,
+    "users": 3525,
+    "places": 10465,
+    "sparsity_pct": 99.95056537665234,
+    "single_user_places": 8156
+  },
+  "2022_candidate": {
+    "rows": 14072,
+    "pairs": 13440,
+    "users": 3133,
+    "places": 8067,
+    "sparsity_pct": 99.94682263461321,
+    "single_user_places": 6414
+  },
+  "2023": {
+    "rows": 17310,
+    "pairs": 16241,
+    "users": 2876,
+    "places": 10353,
+    "sparsity_pct": 99.94545465781151,
+    "single_user_places": 8478
+  },
+  "2023_candidate": {
+    "rows": 14298,
+    "pairs": 14005,
+    "users": 2872,
+    "places": 8974,
+    "sparsity_pct": 99.94566087856407,
+    "single_user_places": 7389
+  },
+  "combined": {
+    "rows": 37477,
+    "pairs": 34477,
+    "users": 6401,
+    "places": 19961,
+    "sparsity_pct": 99.9730164337565,
+    "single_user_places": 15696
+  },
+  "combined_candidate": {
+    "rows": 28370,
+    "pairs": 27445,
+    "users": 6005,
+    "places": 16386,
+    "sparsity_pct": 99.97210815308819,
+    "single_user_places": 13109
+  },
+  "split": {
+    "shared_users": 1492,
+    "validation_rows": 4319,
+    "warm_user_rows": 2246,
+    "warm_item_rows": 2402,
+    "both_warm_rows": 1365
+  },
+  "2022_quality": {
+    "POI_ID": {
+      "null_pct": 54.093,
+      "distinct": 6951
+    },
+    "DGSTFN": {
+      "null_pct": 23.014,
+      "distinct": 5
+    },
+    "REVISIT_INTENTION": {
+      "null_pct": 23.02,
+      "distinct": 5
+    },
+    "RCMDTN_INTENTION": {
+      "null_pct": 23.017,
+      "distinct": 5
+    },
+    "X_COORD": {
+      "null_pct": 24.243,
+      "distinct": 12955
+    },
+    "Y_COORD": {
+      "null_pct": 24.243,
+      "distinct": 13002
+    },
+    "ROAD_NM_ADDR": {
+      "null_pct": 32.167,
+      "distinct": 10573
+    },
+    "VISIT_AREA_TYPE_CD": {
+      "null_pct": 0.0,
+      "distinct": 17
+    },
+    "SGG_CD": {
+      "null_pct": 77.667,
+      "distinct": 197
+    }
+  },
+  "2022_rating45_pct": 83.63455353040283,
+  "2023_quality": {
+    "POI_ID": {
+      "null_pct": 31.208,
+      "distinct": 9570
+    },
+    "DGSTFN": {
+      "null_pct": 26.327,
+      "distinct": 5
+    },
+    "REVISIT_INTENTION": {
+      "null_pct": 26.327,
+      "distinct": 5
+    },
+    "RCMDTN_INTENTION": {
+      "null_pct": 26.327,
+      "distinct": 5
+    },
+    "X_COORD": {
+      "null_pct": 32.355,
+      "distinct": 9321
+    },
+    "Y_COORD": {
+      "null_pct": 32.355,
+      "distinct": 9325
+    },
+    "ROAD_NM_ADDR": {
+      "null_pct": 14.316,
+      "distinct": 10485
+    },
+    "VISIT_AREA_TYPE_CD": {
+      "null_pct": 0.0,
+      "distinct": 17
+    },
+    "SGG_CD": {
+      "null_pct": 75.035,
+      "distinct": 1180
+    }
+  },
+  "2023_rating45_pct": 85.43973026130935,
+  "source_label_crc_equal": {
+    "train": true,
+    "validation": true
+  }
+}

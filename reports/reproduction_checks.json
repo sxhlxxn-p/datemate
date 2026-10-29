@@ -1,0 +1,80 @@
+{
+  "checked_on": "2026-10-29",
+  "files": {
+    "interactions.csv": {
+      "sha256": "494fb0e1f4f12e5adf16c22c91492bf706fda899d1816d5f03aeae299b3c9dbc",
+      "matches_existing": true
+    },
+    "places.csv": {
+      "sha256": "485504fa948502ecf0810bba2bcb0ab5bf1ad8c584693d43eacd11b6df99b22b",
+      "matches_existing": true
+    },
+    "users.csv": {
+      "sha256": "6e1738ad87c0bb03e236e0b2be68268e18b924433e39e3c0821ddff5e4703542",
+      "matches_existing": true
+    },
+    "source_inventory.csv": {
+      "sha256": "c4b30bdc03d3e99c31e92b4e1db3d489599e48f5d1f10d17bde21acc50128d01",
+      "matches_existing": true
+    }
+  },
+  "places": {
+    "rows": 34671,
+    "model_candidates": 16764,
+    "shared_model_interaction_places_across_years": 1609
+  },
+  "interactions": {
+    "combined": {
+      "rows": 29485,
+      "unique_pairs": 28527,
+      "users": 6031,
+      "places": 15500,
+      "sparsity_pct": 99.969483,
+      "single_user_places": 11851,
+      "single_user_place_pct": 76.458065,
+      "users_with_3plus_places": 4656,
+      "users_with_5plus_places": 2473
+    },
+    "by_year": {
+      "2022": {
+        "rows": 15324,
+        "unique_pairs": 14653,
+        "users": 3164,
+        "places": 8335,
+        "sparsity_pct": 99.944437,
+        "single_user_places": 6528,
+        "single_user_place_pct": 78.320336,
+        "users_with_3plus_places": 2343,
+        "users_with_5plus_places": 1243
+      },
+      "2023": {
+        "rows": 14161,
+        "unique_pairs": 13874,
+        "users": 2867,
+        "places": 8774,
+        "sparsity_pct": 99.944846,
+        "single_user_places": 7163,
+        "single_user_place_pct": 81.638933,
+        "users_with_3plus_places": 2313,
+        "users_with_5plus_places": 1230
+      }
+    },
+    "known_user_split_rows": {
+      "train_only": 10260,
+      "train": 14010,
+      "validation": 2600,
+      "test": 2615
+    },
+    "known_user_eval_warm_item_pct": 50.201342,
+    "drop_reasons_first_failure": {
+      "missing_or_invalid_rating": 12719,
+      "excluded_visit_type": 7435,
+      "outside_or_unknown_capital_area": 879,
+      "missing_user_profile": 2990,
+      "missing_user_join": 3546,
+      "unresolved_place": 1023
+    },
+    "eligible_known_users": 2473
+  },
+  "contains_records": false
+}

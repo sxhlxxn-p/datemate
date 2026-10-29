@@ -1,0 +1,23 @@
+{
+  "protocol_version": "1.0",
+  "seed": 42,
+  "primary_year": "2022",
+  "primary_split_column": "known_user_split",
+  "train_labels": ["train", "train_only"],
+  "tune_label": "validation",
+  "final_label": "test",
+  "pair_aggregation": "mean_within_split",
+  "k": 10,
+  "relevance_rating_gte": 4,
+  "ranking_gain": "binary",
+  "ranking_candidates": "same_year_train_places_minus_user_train_places",
+  "negative_sampling": false,
+  "fit_transformers_on": "train_only",
+  "models": {
+    "baselines": ["global_mean", "item_mean", "popularity"],
+    "cbf": {"name_tfidf": true, "visit_type_onehot": true},
+    "cf": {"method": "item_knn", "neighbors_grid": [10, 20, 40], "minimum_support_grid": [2, 3, 5]},
+    "hybrid": {"cf_weight_grid": [0.0, 0.25, 0.5, 0.75], "cold_fallback": "cbf"}
+  },
+  "forbidden_features": ["rating", "revisit_intention", "recommendation_intention", "mean_rating", "visit_count", "rated_visit_count", "unique_user_count", "first_visit_date", "last_visit_date", "source_years", "interaction_count"]
+}

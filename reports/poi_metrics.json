@@ -1,0 +1,22 @@
+{
+  "master_rows": 7442866,
+  "referenced_ids": 15732,
+  "matched_unique_ids": 10477,
+  "matched_rows": 10477,
+  "matched_duplicate_id_rows": 0,
+  "matched_null_pct": {
+    "POI_ID": 0.0,
+    "POI_NM": 0.0,
+    "BRNO": 0.0,
+    "SGG_CD": 0.0,
+    "ROAD_NM_ADDR": 7.979383411281855,
+    "LOTNO_ADDR": 0.0,
+    "ASORT_LCLASDC": 85.69246921828768,
+    "ASORT_MLSFCDC": 85.69246921828768,
+    "ASORT_SDASDC": 85.69246921828768,
+    "X_COORD": 0.0,
+    "Y_COORD": 0.0,
+    "ROAD_NM_CD": 0.0,
+    "LOTNO_CD": 0.0
+  }
+}

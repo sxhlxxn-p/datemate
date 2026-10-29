@@ -1,0 +1,358 @@
+[
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tc_codea_코드A.csv",
+    "bytes": 2261
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tc_codeb_코드B.csv",
+    "bytes": 17266
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tc_sgg_시군구코드.csv",
+    "bytes": 606675
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_activity_consume_his_활동소비내역_A.csv",
+    "bytes": 3010314
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_activity_his_활동내역_A.csv",
+    "bytes": 1809000
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_adv_consume_his_사전소비내역_A.csv",
+    "bytes": 129434
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_companion_info_동반자정보_A.csv",
+    "bytes": 86950
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_lodge_consume_his_숙박소비내역_A.csv",
+    "bytes": 297120
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_move_his_이동내역_A.csv",
+    "bytes": 1887644
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_mvmn_consume_his_이동수단소비내역_A.csv",
+    "bytes": 465328
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_poi_master_POIMaster.csv",
+    "bytes": 1807834692
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_tour_photo_관광사진_A.csv",
+    "bytes": 13988198
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_travel_여행_A.csv",
+    "bytes": 308176
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_traveller_master_여행객 Master_A.csv",
+    "bytes": 491383
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TL_csv/tn_visit_area_info_방문지정보_A.csv",
+    "bytes": 5317952
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tc_codea_코드A.csv",
+    "bytes": 2261
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tc_codeb_코드B.csv",
+    "bytes": 17266
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tc_sgg_시군구코드.csv",
+    "bytes": 606675
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_activity_consume_his_활동소비내역_A.csv",
+    "bytes": 3010314
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_activity_his_활동내역_A.csv",
+    "bytes": 1809000
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_adv_consume_his_사전소비내역_A.csv",
+    "bytes": 129434
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_companion_info_동반자정보_A.csv",
+    "bytes": 86950
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_lodge_consume_his_숙박소비내역_A.csv",
+    "bytes": 297120
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_move_his_이동내역_A.csv",
+    "bytes": 1887644
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_mvmn_consume_his_이동수단소비내역_A.csv",
+    "bytes": 465328
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_poi_master_POIMaster.csv",
+    "bytes": 1807834692
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_tour_photo_관광사진_A.csv",
+    "bytes": 13988198
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_travel_여행_A.csv",
+    "bytes": 308176
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_traveller_master_여행객 Master_A.csv",
+    "bytes": 491383
+  },
+  {
+    "path": "국내여행로그데이터(2022)/TS_csv/tn_visit_area_info_방문지정보_A.csv",
+    "bytes": 5317952
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tc_codea_코드A.csv",
+    "bytes": 2261
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tc_codeb_코드B.csv",
+    "bytes": 17266
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tc_sgg_시군구코드.csv",
+    "bytes": 606675
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_activity_consume_his_활동소비내역_A.csv",
+    "bytes": 375427
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_activity_his_활동내역_A.csv",
+    "bytes": 224684
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_adv_consume_his_사전소비내역_A.csv",
+    "bytes": 17871
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_companion_info_동반자정보_A.csv",
+    "bytes": 10935
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_lodge_consume_his_숙박소비내역_A.csv",
+    "bytes": 36277
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_move_his_이동내역_A.csv",
+    "bytes": 236118
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_mvmn_consume_his_이동수단소비내역_A.csv",
+    "bytes": 58535
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_poi_master_POIMaster.csv",
+    "bytes": 1807834692
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_tour_photo_관광사진_A.csv",
+    "bytes": 1748561
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_travel_여행_A.csv",
+    "bytes": 38526
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_traveller_master_여행객 Master_A.csv",
+    "bytes": 61930
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VL_csv/tn_visit_area_info_방문지정보_A.csv",
+    "bytes": 669674
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tc_codea_코드A.csv",
+    "bytes": 2261
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tc_codeb_코드B.csv",
+    "bytes": 17266
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tc_sgg_시군구코드.csv",
+    "bytes": 606675
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_activity_consume_his_활동소비내역_A.csv",
+    "bytes": 375427
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_activity_his_활동내역_A.csv",
+    "bytes": 224684
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_adv_consume_his_사전소비내역_A.csv",
+    "bytes": 17871
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_companion_info_동반자정보_A.csv",
+    "bytes": 10935
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_lodge_consume_his_숙박소비내역_A.csv",
+    "bytes": 36277
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_move_his_이동내역_A.csv",
+    "bytes": 236118
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_mvmn_consume_his_이동수단소비내역_A.csv",
+    "bytes": 58535
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_poi_master_POIMaster.csv",
+    "bytes": 1807834692
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_tour_photo_관광사진_A.csv",
+    "bytes": 1748561
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_travel_여행_A.csv",
+    "bytes": 38526
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_traveller_master_여행객 Master_A.csv",
+    "bytes": 61930
+  },
+  {
+    "path": "국내여행로그데이터(2022)/VS_csv/tn_visit_area_info_방문지정보_A.csv",
+    "bytes": 669674
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tc_codea_코드A.csv",
+    "bytes": 2201
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tc_codeb_코드B.csv",
+    "bytes": 16881
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tc_sgg_시군구코드.csv",
+    "bytes": 606675
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_activity_consume_his_활동소비내역_E.csv",
+    "bytes": 2274101
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_activity_his_활동내역_E.csv",
+    "bytes": 1293171
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_adv_consume_his_사전소비내역_E.csv",
+    "bytes": 112679
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_companion_info_동반자정보_E.csv",
+    "bytes": 74585
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_lodge_consume_his_숙박소비내역_E.csv",
+    "bytes": 122118
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_move_his_이동내역_E.csv",
+    "bytes": 1187561
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_mvmn_consume_his_이동수단소비내역_E.csv",
+    "bytes": 300957
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_tour_photo_관광사진_E.csv",
+    "bytes": 2166562
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_travel_여행_E.csv",
+    "bytes": 404761
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_traveller_master_여행객 Master_E.csv",
+    "bytes": 394093
+  },
+  {
+    "path": "국내여행로그데이터(2023)/TL_csv/tn_visit_area_info_방문지정보_E.csv",
+    "bytes": 4085319
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tc_codea_코드A.csv",
+    "bytes": 2201
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tc_codeb_코드B.csv",
+    "bytes": 16881
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tc_sgg_시군구코드.csv",
+    "bytes": 606675
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_activity_consume_his_활동소비내역_E.csv",
+    "bytes": 297562
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_activity_his_활동내역_E.csv",
+    "bytes": 173655
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_adv_consume_his_사전소비내역_E.csv",
+    "bytes": 16555
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_companion_info_동반자정보_E.csv",
+    "bytes": 9336
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_lodge_consume_his_숙박소비내역_E.csv",
+    "bytes": 17086
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_move_his_이동내역_E.csv",
+    "bytes": 154049
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_mvmn_consume_his_이동수단소비내역_E.csv",
+    "bytes": 36618
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_tour_photo_관광사진_E.csv",
+    "bytes": 272603
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_travel_여행_E.csv",
+    "bytes": 50380
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_traveller_master_여행객 Master_E.csv",
+    "bytes": 49800
+  },
+  {
+    "path": "국내여행로그데이터(2023)/VL_csv/tn_visit_area_info_방문지정보_E.csv",
+    "bytes": 535356
+  },
+  {
+    "path": "국내여행로그데이터(2023)/메타데이터/tn_poi_master_POIMaster_all.csv",
+    "bytes": 1807834692
+  }
+]

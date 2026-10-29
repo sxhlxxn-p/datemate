@@ -1,0 +1,14 @@
+name: Synthetic pipeline checks
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m unittest discover -s tests -v
+      - run: python scripts/make_synthetic_data.py
+      - run: python scripts/build_common_dataset.py --data-dir outputs/synthetic_source --output-dir outputs/synthetic_processed --spec-path outputs/synthetic_processed/data_spec.generated.md --skip-poi-master
+      - run: python scripts/validate_common_dataset.py --input-dir outputs/synthetic_processed

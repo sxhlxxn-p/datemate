@@ -1,0 +1,3 @@
+# Python 3.10+; builder, validator, evaluator and tests use stdlib only.
+# pandas is used only by the legacy EDA script.
+pandas==2.2.3

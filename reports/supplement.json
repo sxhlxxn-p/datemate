@@ -1,0 +1,39 @@
+{
+  "2022": {
+    "partner_trip_count": 1709,
+    "lover_trip_count": 792,
+    "lover_visit_rows": 7189,
+    "partner_rated_rows": 10287,
+    "raw_user_trip_ids_unmatched": 365,
+    "style_null_pct": {
+      "TRAVEL_STYL_1": 0.0,
+      "TRAVEL_STYL_2": 0.0,
+      "TRAVEL_STYL_3": 0.0,
+      "TRAVEL_STYL_4": 0.0,
+      "TRAVEL_STYL_5": 0.0,
+      "TRAVEL_STYL_6": 0.0,
+      "TRAVEL_STYL_7": 0.0,
+      "TRAVEL_STYL_8": 0.0
+    },
+    "train_validation_user_overlap": 2070
+  },
+  "2023": {
+    "partner_trip_count": 1437,
+    "lover_trip_count": 666,
+    "lover_visit_rows": 5795,
+    "partner_rated_rows": 8292,
+    "raw_user_trip_ids_unmatched": 0,
+    "style_null_pct": {
+      "TRAVEL_STYL_1": 0.0,
+      "TRAVEL_STYL_2": 0.0,
+      "TRAVEL_STYL_3": 0.0,
+      "TRAVEL_STYL_4": 0.0,
+      "TRAVEL_STYL_5": 0.0,
+      "TRAVEL_STYL_6": 0.0,
+      "TRAVEL_STYL_7": 0.0,
+      "TRAVEL_STYL_8": 0.0
+    },
+    "train_validation_user_overlap": 0
+  },
+  "poi_master_header": "\"POI_ID\",\"POI_NM\",\"BRNO\",\"SGG_CD\",\"ROAD_NM_ADDR\",\"LOTNO_ADDR\",\"ASORT_LCLASDC\",\"ASORT_MLSFCDC\",\"ASORT_SDASDC\",\"X_COORD\",\"Y_COORD\",\"ROAD_NM_CD\",\"LOTNO_CD\""
+}
