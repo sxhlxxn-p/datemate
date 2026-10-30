@@ -1,3 +1,4 @@
 # Python 3.10+; builder, validator, evaluator and tests use stdlib only.
-# pandas is used only by the legacy EDA script.
-pandas==2.2.3
+numpy==2.2.6
+scipy==1.15.3
+scikit-learn==1.6.1
