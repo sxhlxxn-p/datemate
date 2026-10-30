@@ -1,4 +1,6 @@
-# Python 3.10+; builder, validator, evaluator and tests use stdlib only.
+# Python 3.10+; builder, validator and tests use stdlib only.
+# pandas, numpy, scipy and scikit-learn are used by the EDA, evaluation and CBF scripts.
+pandas==2.2.3
 numpy==2.2.6
 scipy==1.15.3
 scikit-learn==1.6.1
