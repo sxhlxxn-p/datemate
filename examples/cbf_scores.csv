@@ -1,0 +1,7 @@
+user_id,place_id,score,split,year
+2022:demo_a,demo:cafe,0.9,validation,2022
+2022:demo_a,demo:park,0.4,validation,2022
+2022:demo_a,demo:museum,0.7,validation,2022
+2022:demo_b,demo:cafe,-0.8,validation,2022
+2022:demo_b,demo:park,0.4,validation,2022
+2022:demo_b,demo:museum,0.6,validation,2022
