@@ -1,5 +1,7 @@
 # DateMate 협업 필터링(CF) 및 Baseline 실험 결과
 
+> 이 문서는 B 담당자의 기존 평가 결과를 보존한 기록이다. 후보는 train 장소만 사용하며 전체 Recall/NDCG는 cold 정답을 miss로 센 값이다. v1.1의 all-item 결과가 아니다. 공통 평가 v1.1 통합·재실험은 [통합 확인](CF_Integration_v1_1.md)을 참고한다.
+
 > **B파트 실험 결과:** 공통 전처리 데이터와 `known_user_split` 평가 프로토콜을 사용하여 Item-based KNN 협업 필터링을 구현하고, 인기순·평균 기반 Baseline과 비교하였다. Validation에서 이웃 수 `k=40`을 선택하였으며, 2022년 Test 기준 CF의 Recall@10은 0.0131, NDCG@10은 0.0061로 인기순 Baseline보다 낮았다.
 
 ## 판정

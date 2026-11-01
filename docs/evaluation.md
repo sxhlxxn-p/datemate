@@ -87,7 +87,7 @@ CBF·CF·Hybrid 모두 **warm 후보 validation NDCG@10 warm**으로 파라미�
 ## 담당자 연결
 
 - A(CBF): 기존 모델을 그대로 학습하고 후보 모드별 점수를 반환한다. TF-IDF/one-hot은 warm train 장소로만 fit하고 all 장소는 transform만 한다. `cbf.py`는 한 번 튜닝한 설정을 두 모드에 사용한다.
-- B(CF): `load_data(year, input_dir, candidate_mode)`와 `evaluate()`를 사용한다. k 선택 시 전체 진단값이 아닌 `ndcg_at_10_warm`을 비교한다. 현재 feature/cf CLI에는 후보 모드 인자가 없어 아래 Python 인터페이스로 연결하거나 인자를 추가해야 한다.
+- B(CF): `load_data(year, input_dir, candidate_mode)`와 `evaluate()`를 사용한다. k 선택 시 전체 진단값이 아닌 `ndcg_at_10_warm`을 비교한다. CF CLI는 `--candidate-mode warm|all|both`를 지원하며 기본값은 both다.
 - C(Hybrid): 동일한 연도·split·candidate_mode·데이터 해시·후보 해시의 점수만 연결한다. Top-100 목록의 교집합으로 후보를 줄이면 안 된다. 모델 객체의 `score()`를 직접 연결하거나 전체 출력(`--predictions-top 0`)을 사용한다. 출력에서 생략된 점수는 추천 불가이며 사용자를 삭제하는 근거가 아니다. 가중치·스케일 보정은 validation/train만 쓴다.
 
 ```python
