@@ -65,6 +65,18 @@ Test 평가는 validation에서 설정을 확정한 뒤 진행한다. 코드 변
 
 후보 집합과 지표 계산은 [평가 기준](docs/evaluation.md), 파라미터 범위는 [실험 설정](configs/experiment.json)을 따른다. 역할별 작업과 PR에 넣을 내용은 [협업 안내](CONTRIBUTING.md)에 정리했다.
 
+## 2023 신규 사용자 외부 평가
+
+2022로 장소 사전과 모델을 고정하고 2023 사용자의 초기 방문 3곳 이후를 예측하는 별도 평가다. 기존 v1.1 데이터와 결과를 덮어쓰지 않는다.
+
+```sh
+python scripts/external_evaluation.py --stage prepare --raw-dir "/path/to/data"
+python scripts/external_evaluation.py --stage tune
+python scripts/external_evaluation.py --stage evaluate
+```
+
+분할·후보·누수 방지 규칙은 [외부 평가 안내](docs/external_evaluation_v2.md), 실행 결과와 한계는 [2023 외부 평가 보고서](reports/External_Evaluation_v2.md)를 참고한다. 초기 입력이 충분한 일부 사용자만 평가하며, 후보 밖 정답이 많아 결과 해석에 주의가 필요하다.
+
 ## 데이터 없이 동작 확인
 
 아래 샘플은 실제 기록을 사용하지 않은 가상 데이터다. 공통 전처리는 별도 패키지 없이 실행된다.
