@@ -15,7 +15,10 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--input-dir", type=Path, default=root / "outputs/processed")
 args = ap.parse_args()
 
-inter = pd.read_csv(args.input_dir / "interactions.csv", dtype={"year": str})
+inter = pd.read_csv(
+    args.input_dir / "interactions.csv",
+    dtype={"year": str, "user_id": str, "place_id": str},
+)
 places = pd.read_csv(args.input_dir / "places.csv")
 users = pd.read_csv(args.input_dir / "users.csv", dtype={"year": str})
 
@@ -78,12 +81,28 @@ for y in ("2022", "2023"):
 
 # ---------------------------------------------------------------- C. 연도 이동
 title("C. 연도 이동 (temporal_split): 2022 학습 -> 2023 평가")
-tr22 = set(inter[(inter.year == "2022")].place_id)
+all22 = set(inter[inter.year == "2022"].place_id)
+tr22 = set(
+    inter[
+        (inter.year == "2022")
+        & inter.known_user_split.isin(["train", "train_only"])
+    ].place_id
+)
 g23 = inter[inter.year == "2023"]
 pair23 = g23.groupby(["user_id", "place_id"], as_index=False)["rating"].mean()
 rel23 = pair23[pair23.rating >= 4]
-print(f"2022 장소 {len(tr22):,}곳 | 2023 장소 {g23.place_id.nunique():,}곳 | 공통 {len(tr22 & set(g23.place_id)):,}곳 (명세의 공통 모델 장소 1,609)")
-print(f"2023 정답(평점>=4) 쌍 {len(rel23):,} 중 2022 에 있는 장소: {pct(rel23.place_id.isin(tr22).sum(), len(rel23))}")
+print(
+    f"2022 train 후보 {len(tr22):,}곳 | 2022 전체 관측 {len(all22):,}곳 | "
+    f"2023 장소 {g23.place_id.nunique():,}곳"
+)
+print(
+    f"2022 train 후보와 2023의 공통 장소 {len(tr22 & set(g23.place_id)):,}곳 "
+    f"(전기간 2022/2023 공통 모델 장소는 {len(all22 & set(g23.place_id)):,}곳)"
+)
+print(
+    f"2023 정답(평점>=4) 쌍 {len(rel23):,} 중 2022 train 후보에 있는 장소: "
+    f"{int(rel23.place_id.isin(tr22).sum()):,} ({pct(rel23.place_id.isin(tr22).sum(), len(rel23))})"
+)
 print(f"2023 사용자 {g23.user_id.nunique():,}명은 모두 cold user (2023 평점을 취향에 쓰면 안 됨)")
 
 # ---------------------------------------------------------------- D. places
