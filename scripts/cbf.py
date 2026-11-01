@@ -62,7 +62,7 @@ class CBF:
         return dict(name_mode=self.name_mode, w_type=self.w_type, w_region=self.w_region, weighting=self.weighting)
 
     def fit(self, d, tables):
-        cand = d["cand"]
+        cand = np.array(sorted(d["train"].place_id.unique()))
         self.cand, self.train = cand, d["train"]
         ids = tables["name"].index
         missing = set(cand) - set(ids)
@@ -99,8 +99,9 @@ class CBF:
         return self
 
     def score(self, users, cand):
-        if not np.array_equal(cand, self.cand):
-            raise ValueError("candidate order changed")
+        missing = set(cand) - set(self.row.index)
+        if missing:
+            raise ValueError(f"Missing {len(missing)} candidate feature rows")
         t = self.train[self.train.user_id.isin(users)]
         w = t.rating
         if self.weighting == "centered":                          # 평점 - 사용자 평균: '평균보다 좋았던' 곳을 강조
@@ -108,11 +109,11 @@ class CBF:
             allzero = c.abs().groupby(t.user_id).transform("max") == 0   # 평점이 전부 같으면 0 이 되므로 원래 평점 사용
             w = c.where(~allzero, t.rating)
         u = pd.Series(np.arange(len(users)), index=users)
-        c_idx = pd.Series(np.arange(len(cand)), index=cand)
+        c_idx = pd.Series(np.arange(len(self.cand)), index=self.cand)
         W = sp.csr_matrix((w.to_numpy(float), (u[t.user_id].to_numpy(), c_idx[t.place_id].to_numpy())),
-                          shape=(len(users), len(cand)))
+                          shape=(len(users), len(self.cand)))
         P = normalize(W @ self.Xc)                                 # 사용자 프로필 (행 길이 1)
-        return (P @ self.Xc.T).toarray()                           # 코사인 유사도
+        return (P @ self.X[self.row[cand].to_numpy()].T).toarray()                           # 코사인 유사도
 
     def predict(self, users, places):
         """평점 예측 = 사용자가 평가한 장소들의 평점을, 대상 장소와의 유사도로 가중평균. 유사한 이력이 없으면 NaN."""
@@ -167,8 +168,8 @@ def tune(d, tables, variant):
                          ndcg_at_10_warm=met["ndcg_at_10_warm"], recall_at_10_warm=met["recall_at_10_warm"],
                          mae=met["mae"], seconds=round(time.perf_counter() - t0, 1)))
     res = pd.DataFrame(rows)
-    # 선택 기준: validation 전체 NDCG@10 (동점이면 표에서 먼저 나온 설정 = 더 단순한 설정)
-    best = res.loc[res.ndcg_at_10.idxmax()]
+    # 선택 기준: warm 후보 validation NDCG@10 warm (동점이면 표에서 먼저 나온 설정 = 더 단순한 설정)
+    best = res.loc[res.ndcg_at_10_warm.idxmax()]
     return res, dict(name_mode=best.name_mode, w_type=float(best.w_type), w_region=float(best.w_region),
                      weighting=best.weighting)
 
@@ -178,20 +179,24 @@ def run_year(args, tables):
     print(f"year {d['year']}: train pairs {len(d['train']):,}, candidates {len(d['cand']):,}")
     for variant in ("cbf", "cbf_region"):
         res, best = tune(d, tables, variant)
-        folder = ROOT / "outputs/experiments" / f"known_user_{d['year']}" / variant
+        folder = ROOT / "outputs/experiments/v1_1" / f"known_user_{d['year']}" / "tuning_warm" / variant
         folder.mkdir(parents=True, exist_ok=True)
         res.to_csv(folder / "tuning_validation.csv", index=False, encoding="utf-8")
-        print(f"\n=== {variant}: {len(res)} settings tried on validation. top 5 by NDCG@10 ===")
-        print(res.sort_values("ndcg_at_10", ascending=False).head(5).round(4).to_string(index=False))
+        print(f"\n=== {variant}: {len(res)} settings tried on validation. top 5 by warm NDCG@10 ===")
+        print(res.sort_values("ndcg_at_10_warm", ascending=False).head(5).round(4).to_string(index=False))
         print("chosen:", best)
         splits = ["validation"] + (["test"] if args.final_test else [])
-        for split in splits:
-            t0 = time.perf_counter()
-            m = CBF(**best).fit(d, tables)
-            met, preds = ep.evaluate(d, m, split, args.predictions_top)
-            ep.save_results(d, variant, split, met, preds, args.input_dir, dict(best, grid_size=len(res)),
-                            time.perf_counter() - t0)
-            ep.show(variant, split, met)
+        modes = ("warm", "all") if args.candidate_mode == "both" else (args.candidate_mode,)
+        model = CBF(**best).fit(d, tables)
+        for mode in modes:
+            evaluation = ep.load_data(args.year, args.input_dir, mode)
+            for split in splits:
+                t0 = time.perf_counter()
+                met, preds = ep.evaluate(evaluation, model, split, args.predictions_top)
+                ep.save_results(evaluation, variant, split, met, preds, args.input_dir,
+                                dict(best, grid_size=len(res), top_n=args.predictions_top),
+                                time.perf_counter() - t0)
+                ep.show(f"{variant}/{mode}", split, met)
 
 
 def run_cross_year(args, tables):
@@ -200,7 +205,7 @@ def run_cross_year(args, tables):
     g = inter[inter.year == "2023"]
     cross = g.groupby(["user_id", "place_id"], as_index=False)["rating"].mean()
     # 학습은 2022 train, 후보는 2022 train 장소. 2023 평점은 사용자 프로필에 쓰지 않음.
-    d = dict(year="2023", protocol="cross_year_2022_to_2023", train=d22["train"], cross=cross, cand=d22["cand"],
+    d = dict(year="2023", protocol="v1_1/cross_year_2022_to_2023/warm", candidate_mode="warm", train=d22["train"], cross=cross, cand=d22["cand"],
              global_mean=d22["global_mean"])
     users = pd.read_csv(args.input_dir / "users.csv", dtype=str)
     users = users[users.year == "2023"]
@@ -218,6 +223,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input-dir", type=Path, default=ROOT / "outputs/processed")
     ap.add_argument("--year", default=ep.CFG["primary_year"])
+    ap.add_argument("--candidate-mode", choices=["warm", "all", "both"], default="both")
     ap.add_argument("--final-test", action="store_true", help="최선 설정으로 test 를 평가 (모델당 한 번만 실행할 것)")
     ap.add_argument("--cross-year", action="store_true")
     ap.add_argument("--predictions-top", type=int, default=100)

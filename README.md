@@ -1,16 +1,16 @@
 # DateMate
 
 서울·수도권 데이트 장소 추천 프로젝트. AI-Hub 여행로그 2022·2023 데이터를 사용한다.
-현재 공통 전처리까지 완료했다. 역할을 정한 뒤 이 데이터를 기준으로 CBF·CF·Hybrid를 구현하고 비교하면 된다.
+공통 전처리와 CBF 구현이 main에 반영되어 있다. CF·Hybrid는 담당 브랜치에서 진행 중이며, 모델 비교는 [공통 평가 v1.1](docs/evaluation.md)을 기준으로 맞춘다.
 
 ## 실행 환경
 
-Python 3.10 이상.
+모델 실험은 Python 3.11을 권장한다(CI 기준). 전처리 스크립트는 Python 3.10 이상에서 실행할 수 있다. 현재 고정한 실험 패키지는 Python 3.14용이 아니다.
 
 ```sh
 git clone https://github.com/sxhlxxn-p/datemate.git
 cd datemate
-python3 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
@@ -50,6 +50,17 @@ python scripts/validate_common_dataset.py
 4. 2023 연도 내 실험과 2022→2023 평가는 별도로 정리한다.
 
 반복 방문 집계는 분할 후에 한다. TF-IDF·스케일러·평균·인기도는 train에서만 계산한다. `places.csv`의 전체기간 평균 평점·방문 수와 `users.csv`의 `interaction_count`는 입력 특성에서 제외한다.
+
+Warm 후보 7,172곳과 all 후보 16,764곳은 별도 실험으로 실행한다(2022 기준). warm validation NDCG로 설정을 고른 뒤 같은 설정을 두 모드에 사용한다.
+
+```sh
+python scripts/protocol_summary.py --year 2022
+python scripts/eval_protocol.py --year 2022 --split validation --candidate-mode warm
+python scripts/eval_protocol.py --year 2022 --split validation --candidate-mode all
+python scripts/cbf.py --year 2022 --candidate-mode both
+```
+
+Test 평가는 validation에서 설정을 확정한 뒤 진행한다. 코드 변경 검증에서 측정한 값은 최종 성능으로 쓰지 않는다.
 
 후보 집합과 지표 계산은 [평가 기준](docs/evaluation.md), 파라미터 범위는 [실험 설정](configs/experiment.json)을 따른다. 역할별 작업과 PR에 넣을 내용은 [협업 안내](CONTRIBUTING.md)에 정리했다.
 
