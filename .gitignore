@@ -40,3 +40,7 @@ __pycache__/
 .venv/
 venv/
 /aihubshell
+
+# Reviewed aggregate model comparisons only; row-level records remain excluded.
+!/reports/test_model_comparison.csv
+!/reports/validation_k_comparison.csv

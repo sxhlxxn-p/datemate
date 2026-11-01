@@ -22,7 +22,7 @@ warm validation NDCG@10으로 설정을 고르고, 같은 설정으로 warm/all 
 
 ## B — CF
 
-feature/cf의 ItemKNN 모델은 공통 score/predict 인터페이스와 호환된다. 실행부에서 `load_data()`에 후보 모드를 전달하고, k 선택 지표를 `ndcg_at_10_warm`으로 맞춘다. 기존 CF CLI는 이 변경을 자동 적용하지 않으므로 기존 명령의 결과를 v1.1 최종 비교에 바로 넣지 않는다.
+ItemKNN 모델과 실행부에 v1.1을 연결했다. `python scripts/cf.py --year 2022 --tune --candidate-mode both`로 warm validation에서 k를 선택하고 같은 모델의 warm/all 결과를 저장한다. 설정 확정 후 `--final-test`를 추가한다. 기존 k를 재현하려면 `--k 40 --split test --candidate-mode both`를 사용한다.
 
 CF가 점수를 내지 못한 조합은 `-inf`로 둔다. 인기순 등 fallback을 넣은 모델은 별도 이름으로 비교한다. warm에서 고른 k를 all에도 그대로 쓴다.
 

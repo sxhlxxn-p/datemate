@@ -1,0 +1,5 @@
+﻿model,recall_at_10,ndcg_at_10,recall_at_10_warm,ndcg_at_10_warm,recommendable_user_ratio,item_coverage,mae,rmse,rating_supported_pairs
+global_mean,0,0,0,0,1,0.0015,0.6643,0.8026,1243
+item_mean,0,0,0,0,1,0.0015,0.701,0.8806,645
+popularity,0.0402,0.0211,0.0754,0.0396,1,0.002,,,0
+item_knn_k40,0.0131,0.0061,0.0246,0.0114,0.8129,0.411,0.6633,0.8223,143
