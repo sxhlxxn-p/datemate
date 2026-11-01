@@ -1,6 +1,6 @@
 """
-임시 평가 + 기준선 3종 (docs/evaluation.md 규칙 반영).
-공식 모델 평가 코드 올라오면 교체 예정
+공통 평가 프로토콜 v1.1 + 기준선 3종.
+후보 모드 warm/all은 별도 실행하며 학습 데이터는 동일하게 유지한다.
 
 하는 일
   1. outputs/processed/interactions.csv 에서 known_user_split 으로 train / validation / test 생성.
@@ -40,11 +40,25 @@ DISC = 1.0 / np.log2(np.arange(2, K + 2))
 
 
 # ------------------------------------------------------------------ 데이터 준비
-def load_data(year, input_dir):
+def load_data(year, input_dir, candidate_mode="warm"):
     """한 해의 train / validation / test 사용자-장소 쌍(평균 평점)과 후보 장소 목록을 만듦."""
+    if candidate_mode not in {"warm", "all"}:
+        raise ValueError("candidate_mode must be warm or all")
+    year = str(year)
+    input_dir = Path(input_dir)
     cols = {"year": str, "user_id": str, "place_id": str}
     g = pd.read_csv(input_dir / "interactions.csv", dtype=cols)
     g = g[g.year == year]
+    if g.empty:
+        raise ValueError(f"No interactions for year {year}")
+    if not g.known_user_split.isin({"train", "train_only", "validation", "test"}).all():
+        raise ValueError("Unknown or missing known_user_split")
+    rating = pd.to_numeric(g.rating, errors="coerce")
+    if not (rating.notna() & rating.between(1, 5)).all():
+        raise ValueError("Ratings must be numeric and in [1,5]")
+    g = g.assign(rating=rating)
+    if g[["user_id", "place_id"]].isna().any().any():
+        raise ValueError("Missing user/place IDs")
 
     def pairs(labels):
         # 분할 안에서만 같은 사용자-장소의 평점을 평균 냄 (pair_aggregation = mean_within_split)
@@ -61,8 +75,20 @@ def load_data(year, input_dir):
         raise ValueError(f"{len(overlaps)} user-place pairs occur in multiple splits")
     # 후보 = 같은 해 train/train_only 에 있는 장소 전체. 사전순으로 정렬해 두면
     # '열 순서 = place_id 사전순' 이 되어 안정 정렬만으로 동점 규칙이 지켜짐.
-    cand = np.array(sorted(train.place_id.unique()))
+    if train.empty:
+        raise ValueError("Training data is empty")
+    train_cand = np.array(sorted(train.place_id.unique()))
+    cand = train_cand.copy()
+    if candidate_mode == "all":
+        places = pd.read_csv(input_dir / "places.csv", dtype=str)
+        if places.place_id.isna().any() or places.place_id.duplicated().any():
+            raise ValueError("places.csv needs unique, nonempty place_id")
+        cand = np.array(sorted(places.loc[places.is_model_candidate == "1", "place_id"]))
+        if set(train_cand) - set(cand):
+            raise ValueError("All-item catalog must include every train place")
     return dict(year=year, train=train, validation=val, test=test, cand=cand,
+                train_cand=train_cand, candidate_mode=candidate_mode,
+                protocol=f"v1_1/known_user_{year}/{candidate_mode}",
                 global_mean=float(train.rating.mean()))
 
 
@@ -71,6 +97,8 @@ class Baseline:
     """global_mean / item_mean / popularity (평가 문서의 기준선 3종)."""
 
     def __init__(self, kind):
+        if kind not in {"global_mean", "item_mean", "popularity"}:
+            raise ValueError(f"Unknown baseline: {kind}")
         self.kind = kind
 
     def fit(self, d):
@@ -86,7 +114,7 @@ class Baseline:
         elif self.kind == "item_mean":      # 장소 평균 평점이 높은 순
             v = self.item_mean.reindex(cand).fillna(self.gm).to_numpy()
         else:                               # popularity: 방문 쌍이 많은 순
-            v = self.pop.reindex(cand).to_numpy()
+            v = self.pop.reindex(cand).fillna(0).to_numpy()
         return np.tile(v, (len(users), 1))
 
     def predict(self, users, places):
@@ -134,7 +162,10 @@ def evaluate(d, model: ScoreModel, split, top_n=100):
         raise ValueError("top_n must be zero or positive")
     ev = d[split]
     users = np.array(sorted(ev.user_id.unique()))        # 평가 사용자 = 이 분할에 쌍이 있는 사용자
-    cand = d["cand"]
+    cand = np.asarray(d["cand"])
+    if list(cand) != sorted(set(cand)):
+        raise ValueError("Candidates must be unique and sorted by place_id")
+    warm_items = set(d["train"].place_id)
     if len(users) == 0:
         raise ValueError(f"split {split!r} has no evaluation users")
     if len(cand) == 0:
@@ -145,42 +176,58 @@ def evaluate(d, model: ScoreModel, split, top_n=100):
 
     # 후보에서 그 사용자의 train 장소 제외 (-inf = 추천 불가)
     t = d["train"][d["train"].user_id.isin(users)]
+    t = t[t.place_id.isin(set(cand))]
     S[u_idx[t.user_id].to_numpy(), c_idx[t.place_id].to_numpy()] = -np.inf
+    seen_counts = t.groupby("user_id").place_id.nunique().reindex(users, fill_value=0).to_numpy()
+    available_counts = len(cand) - seen_counts
 
-    # 정답: 평점 >= 4. 후보 안(warm) 정답은 R 표에 표시, 후보 밖(cold) 정답은 개수만 셈.
+    # 정답: 평점 >= 4. warm 여부는 후보 모드가 아니라 train 등장 여부로 결정한다.
     rel = ev[ev.rating >= REL]
     rel_total = rel.groupby("user_id").size().reindex(users, fill_value=0).to_numpy()
-    warm = rel[rel.place_id.isin(set(cand))]
+    warm = rel[rel.place_id.isin(warm_items)]
+    relevant_in_candidates = rel[rel.place_id.isin(set(cand))]
     R = np.zeros(S.shape, dtype=bool)
-    R[u_idx[warm.user_id].to_numpy(), c_idx[warm.place_id].to_numpy()] = True
-    rel_warm = R.sum(1)
+    R[u_idx[relevant_in_candidates.user_id].to_numpy(), c_idx[relevant_in_candidates.place_id].to_numpy()] = True
+    warm_columns = np.isin(cand, list(warm_items))
+    rel_warm = warm.groupby("user_id").size().reindex(users, fill_value=0).to_numpy()
 
     # 점수 높은 순. 안정 정렬이라 같은 점수는 열 순서(= place_id 사전순)가 유지됨.
     effective_k = min(K, len(cand))
     top = np.argsort(-S, axis=1, kind="stable")[:, :effective_k]
-    hit = np.take_along_axis(R, top, 1)                           # (사용자, effective_k) 적중 여부
+    valid = np.isfinite(np.take_along_axis(S, top, 1))
+    hit = np.take_along_axis(R, top, 1) & valid                           # (사용자, effective_k) 적중 여부
     discounts = DISC[:effective_k]
     hits, dcg = hit.sum(1), (hit * discounts).sum(1)
-    ideal = lambda n: discounts[:min(effective_k, int(n))].sum()  # 이상적 DCG: 1 을 min(K, 정답 수)개
+    warm_hit = hit & warm_columns[top]
+    warm_hits, warm_dcg = warm_hit.sum(1), (warm_hit * discounts).sum(1)
+    ideal = lambda n: DISC[:min(K, int(n))].sum()  # 이상적 DCG: 1 을 min(K, 정답 수)개
     idcg_all = np.array([ideal(n) for n in rel_total])
     idcg_warm = np.array([ideal(n) for n in rel_warm])
 
     ok_all, ok_warm = rel_total > 0, rel_warm > 0                 # 정답 0 인 사용자는 분모에서 제외
-    valid = np.isfinite(np.take_along_axis(S, top, 1))            # 유효 추천(-inf 아님)
-    full_k = valid.sum(1) == effective_k
+    full_k = valid.sum(1) == K
+    def mean_or_none(values):
+        return float(np.mean(values)) if len(values) else None
+    def ratio(num, denom, mask):
+        return mean_or_none(num[mask] / denom[mask])
     m = dict(
         eval_users=len(users), users_without_relevant=int((~ok_all).sum()), ranked_users=int(ok_all.sum()),
         relevant_total=int(rel_total.sum()), relevant_warm=int(rel_warm.sum()),
         relevant_cold=int(rel_total.sum() - rel_warm.sum()),
         warm_ranked_users=int(ok_warm.sum()), candidates=len(cand),
+        protocol_version=CFG["protocol_version"], candidate_mode=d.get("candidate_mode", "warm"),
         ranking_k_requested=K, ranking_k_effective=effective_k,
+        users_with_fewer_than_k_candidates=int((available_counts < K).sum()),
+        candidates_per_user_available_mean=float(available_counts.mean()),
+        users_without_scores=int((~np.isfinite(S).any(1) & ok_all).sum()),
+        relevant_in_candidates=len(relevant_in_candidates),
         candidates_per_user_mean=float(np.isfinite(S).sum(1).mean()), train_pairs=len(d["train"]),
         eval_pairs=len(ev),
-        recall_at_10=float((hits[ok_all] / rel_total[ok_all]).mean()),          # 전체 (cold 정답은 miss)
-        ndcg_at_10=float((dcg[ok_all] / idcg_all[ok_all]).mean()),
-        recall_at_10_warm=float((hits[ok_warm] / rel_warm[ok_warm]).mean()),    # warm-only
-        ndcg_at_10_warm=float((dcg[ok_warm] / idcg_warm[ok_warm]).mean()),
-        recommendable_user_ratio=float(full_k[ok_all].mean()),
+        recall_at_10=ratio(hits, rel_total, ok_all),          # 전체 (cold 정답은 miss)
+        ndcg_at_10=ratio(dcg, idcg_all, ok_all),
+        recall_at_10_warm=ratio(warm_hits, rel_warm, ok_warm),    # warm-only
+        ndcg_at_10_warm=ratio(warm_dcg, idcg_warm, ok_warm),
+        recommendable_user_ratio=mean_or_none(full_k[ok_all]),
         item_coverage=float(len(np.unique(top[ok_all][valid[ok_all]])) / len(cand)),
     )
 
@@ -237,16 +284,27 @@ def save_results(d, name, split, metrics, preds, input_dir, params, seconds):
     # 연도 이동처럼 다른 실험은 d["protocol"] 로 폴더를 분리함 (연도 내 실험과 섞지 않기 위해)
     out = ROOT / "outputs/experiments" / d.get("protocol", f"known_user_{d['year']}") / name / split
     out.mkdir(parents=True, exist_ok=True)
-    config = dict(model=name, params=params, year=d["year"], split=split, experiment=CFG)
+    config = dict(model=name, params=params, year=d["year"], split=split, experiment=CFG,
+                  candidate_mode=d.get("candidate_mode", "warm"),
+                  protocol=d.get("protocol", f"known_user_{d['year']}"))
     cfg_text = json.dumps(config, sort_keys=True, ensure_ascii=False)
     (out / "config.json").write_text(json.dumps(config, indent=2, ensure_ascii=False), encoding="utf-8")
+    relevant = d[split][d[split].rating >= REL]
+    warm_users = sorted(relevant.loc[relevant.place_id.isin(set(d["train"].place_id)), "user_id"].unique())
+    positive_users = sorted(relevant.user_id.unique())
     meta = dict(model=name, year=d["year"], split=split, seed=CFG["seed"], git=git_info(),
+                positive_users_sha256=hashlib.sha256("\n".join(positive_users).encode()).hexdigest(),
+                warm_positive_users_sha256=hashlib.sha256("\n".join(warm_users).encode()).hexdigest(),
+                protocol=config["protocol"], candidate_mode=config["candidate_mode"],
+                predictions_top=params.get("top_n", params.get("predictions_top", 100)),
+                candidate_sha256=hashlib.sha256("\n".join(d["cand"]).encode()).hexdigest(),
+                evaluation_pairs_sha256=hashlib.sha256(d[split].sort_values(["user_id", "place_id"]).to_csv(index=False).encode()).hexdigest(),
                 config_sha256=hashlib.sha256(cfg_text.encode("utf-8")).hexdigest(),
                 data_sha256={f: sha256(input_dir / f) for f in ("interactions.csv", "places.csv", "users.csv")},
                 python=platform.python_version(), pandas=pd.__version__, numpy=np.__version__,
                 scipy=scipy.__version__, scikit_learn=sklearn.__version__,
                 seconds=round(seconds, 2))
-    (out / "metrics.json").write_text(json.dumps(dict(meta=meta, metrics=metrics), indent=2, ensure_ascii=False),
+    (out / "metrics.json").write_text(json.dumps(dict(meta=meta, metrics=metrics), indent=2, ensure_ascii=False, allow_nan=False),
                                       encoding="utf-8")
     preds.to_csv(out / "predictions.csv", index=False, encoding="utf-8")
     (out / "environment.txt").write_text(
@@ -291,13 +349,17 @@ class Oracle:
 
 def self_check(d, split="validation"):
     ev = d[split]
-    # 1) 오라클: warm 지표 1.0, 전체 Recall = warm 정답 비율
+    # Independent hand-computable edge cases live in tests/test_evaluation_protocol.py.
     m, _ = evaluate(d, Oracle(ev), split)
-    assert abs(m["recall_at_10_warm"] - 1) < 1e-12 and abs(m["ndcg_at_10_warm"] - 1) < 1e-12, "oracle warm != 1"
-    # 전체 Recall 은 (warm 정답 / 전체 정답) 과 같아야 함. 사용자당 정답이 1개인 분할(holdout)에서만 정확히 성립.
-    assert abs(m["recall_at_10"] - m["relevant_warm"] / m["relevant_total"]) < 1e-9, "oracle overall mismatch"
-    print(f"  oracle: warm Recall/NDCG = 1.0, overall Recall {m['recall_at_10']:.4f} "
-          f"(warm {m['relevant_warm']} / relevant {m['relevant_total']} = {m['relevant_warm'] / m['relevant_total']:.4f})")
+    rel = ev[ev.rating >= REL]
+    seen = d["train"].groupby("user_id").place_id.apply(set).to_dict()
+    expected = []
+    for user, g in rel.groupby("user_id"):
+        available = set(d["cand"]) - seen.get(user, set())
+        expected.append(min(K, len(set(g.place_id) & available)) / len(g))
+    want = float(np.mean(expected)) if expected else None
+    assert m["recall_at_10"] == want or abs(m["recall_at_10"] - want) < 1e-12
+    print("  oracle: macro Recall matches independent candidate-limited expectation")
 
     # 2) 동점 규칙: global_mean 의 상위 10 개 = (후보 - 자기 train 장소) 의 place_id 사전순 앞 10 개
     g = Baseline("global_mean").fit(d)
@@ -305,7 +367,7 @@ def self_check(d, split="validation"):
     seen = d["train"].groupby("user_id").place_id.apply(set)
     got = preds.groupby("user_id", sort=False).place_id.apply(list)
     for u in list(got.index)[:200]:
-        want = [c for c in d["cand"] if c not in seen[u]][:K]
+        want = [c for c in d["cand"] if c not in seen.get(u, set())][:K]
         assert got[u] == want, f"tie order mismatch for {u}"
     print("  tie order: first 200 users match place_id lexicographic order")
 
@@ -318,7 +380,7 @@ def self_check(d, split="validation"):
         if u not in relset.index:
             continue
         r = relset[u]
-        assert not (set(lst) & set(seen[u])), "train place recommended"
+        assert not (set(lst) & set(seen.get(u, set()))), "train place recommended"
         h = [1 if p in r else 0 for p in lst]
         rec.append(sum(h) / len(r))
         ndcg.append(sum(x / np.log2(i + 2) for i, x in enumerate(h)) / sum(1 / np.log2(i + 2) for i in range(min(K, len(r)))))
@@ -334,12 +396,13 @@ def main():
     ap.add_argument("--input-dir", type=Path, default=ROOT / "outputs/processed")
     ap.add_argument("--year", default=CFG["primary_year"])
     ap.add_argument("--split", choices=["validation", "test"], default="validation")
+    ap.add_argument("--candidate-mode", choices=["warm", "all"], default="warm")
     ap.add_argument("--models", nargs="+", default=CFG["models"]["baselines"])
     ap.add_argument("--predictions-top", type=int, default=100, help="predictions.csv 에 사용자당 저장할 개수 (0 = 후보 전체)")
     ap.add_argument("--self-check", action="store_true")
     args = ap.parse_args()
 
-    d = load_data(args.year, args.input_dir)
+    d = load_data(args.year, args.input_dir, args.candidate_mode)
     print(f"year {d['year']}: train pairs {len(d['train']):,}, validation pairs {len(d['validation']):,}, "
           f"test pairs {len(d['test']):,}, candidates {len(d['cand']):,}, global mean {d['global_mean']:.4f}")
     if args.self_check:
