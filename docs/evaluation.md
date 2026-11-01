@@ -33,14 +33,20 @@ TF-IDF, 정규화, 평균, 인기, 이웃, 가중치 보정과 후보 선별 통
 2. 주 랭킹 후보: 해당 연도 train/train_only에 존재하는 후보 장소 전체에서 사용자 train 장소를 제외. 음성 샘플링은 하지 않는다. 미관측은 관측 부재이지 싫어함 라벨이 아니다.
 3. 정답: 해당 split의 사용자–장소 평균 rating>=4. 이진 gain으로 NDCG@10/Recall@10을 사용자별 계산 후 macro 평균. 동점은 place_id 사전순으로 고정. 이상적인 DCG는 min(10, relevant_count)개 1을 배치한 값이다.
 4. 전체 정답이 0인 사용자는 랭킹 분모에서 제외하되 제외 수를 보고한다. 후보에 없는 cold 정답은 전체 지표에서 miss(0)이며 warm-only 지표에서는 제거한다. 전체/후보 내 정답 수, 평가 사용자 수를 반드시 기록한다.
-5. CF 주 지표는 같은 연도 train에 존재하는 warm-item 정답. CBF/Hybrid도 이 동일 하위집합 지표를 제공하고 전체 정답 지표를 추가한다. train 후보 제한 아래에서는 cold 정답을 추천할 수 없다는 점을 명시한다. 더 넓은 카탈로그를 쓰는 CBF cold-item 실험은 별도 표에 기록한다.
+5. CF 주 지표는 같은 연도 train에 존재하는 warm-item 정답. CBF/Hybrid도 이 동일 하위집합 지표를 제공하고 전체 정답 지표를 추가한다. 현재 `eval_protocol.py`는 train 후보만 사용하므로 `relevant_cold`는 추천 불가능한 정답 수를 세는 진단값이며 cold-item 추천 성능이 아니다. 더 넓은 카탈로그를 쓰는 CBF cold-item 실험은 후보 가용 시점을 먼저 정의한 뒤 별도 프로토콜·표에 기록한다.
 6. 추천 가능 사용자 비율 = K개 유효 추천을 제공한 사용자 / 정답이 있는 평가 사용자. 실제 점수를 못 낸 사용자도 전체 분모에 포함한다. item coverage = 추천된 고유 장소 / 공통 후보 장소. 후보가 K개 미만이면 가용 개수를 보고한다.
 7. 연도 이동은 2022 train 카탈로그 후보 및 2022 학습 장소와 2023 정답의 공통/신규 장소를 구분한다. 순수 CF cold-user 결과는 개인화 성능으로 해석하지 않는다. 전체 1,609개 공통 모델 장소라는 기존 수치는 전기간 집계이며 train 공통 장소 수와 다를 수 있다.
 
 기준선은 global mean, train item mean(미지원 시 global mean), train 사용자–장소 쌍 빈도 기반 popularity다. 후보와 전처리를 바꾼 비교는 별도 실험이다. seed=42, 단일 실행 결과와 여러 seed 평균을 혼동하지 않는다.
 
+## 공통 점수 인터페이스
+
+모든 랭킹 모델은 `score(users, candidates)`로 전달받은 사용자·후보 순서를 바꾸지 않고 `(사용자 수, 후보 수)` 실수 배열을 반환한다. 점수를 낼 수 없는 조합만 `-inf`로 표시할 수 있으며 `NaN`과 `+inf`는 오류다. 평가기는 사용자별 train 장소를 추가로 `-inf` 처리한다.
+
+평점 예측을 지원하는 모델은 `predict(users, places)`로 입력 길이와 같은 1차원 배열을 반환한다. 지원하지 못하는 쌍은 `NaN`, 기능 전체가 없으면 `None`을 반환한다. 평가기는 shape, NaN/무한대 규칙을 검사한 뒤 fallback 포함 전체 지표와 지원 쌍 지표를 분리한다. CF·CBF·Hybrid 모두 이 계약과 같은 후보 순서를 사용해야 공정 비교로 인정한다.
+
 ## 결과 저장
 
-로컬 `outputs/experiments/<protocol>/<model>/`에 config.json, metrics.json, predictions.csv, environment.txt를 보관한다. predictions.csv는 user_id, place_id, score, split, year이며 순위 전체 후보 점수를 기록한다. 행 단위 예측·프로필·학습 모델은 Git에 올리지 않는다.
+로컬 `outputs/experiments/<protocol>/<model>/`에 config.json, metrics.json, predictions.csv, environment.txt를 보관한다. predictions.csv는 user_id, place_id, score, split, year이며 기본 실행은 사용자별 상위 100개를 저장한다. `--predictions-top 0`일 때만 전체 후보를 저장한다. Hybrid 결합 입력이나 모델 간 후보별 점수 비교에는 반드시 전체 후보 출력(`--predictions-top 0`)을 사용한다. 행 단위 예측·프로필·학습 모델은 Git에 올리지 않는다.
 
-공유 결과 JSON은 모델명, Git commit, 설정 해시, 로컬 데이터 산출물 SHA-256, Python/패키지 버전, seed, 연도/분할, train 쌍 수, 평가 쌍·사용자 수, warm/cold 분모, 후보 수, MAE/RMSE/NDCG@10/Recall@10/coverage, 실행 시간의 집계만 포함한다. 평가 코드도 함께 공유하고, 기준선과 후보·분모가 같은지 확인한다.
+공유 결과 JSON은 모델명, Git commit, 설정 해시, 로컬 데이터 산출물 SHA-256, Python과 pandas/numpy/scipy/scikit-learn 버전, seed, 연도/분할, train 쌍 수, 평가 쌍·사용자 수, warm/cold 분모, 후보 수, MAE/RMSE/NDCG@10/Recall@10/coverage, 실행 시간의 집계만 포함한다. 평가 코드도 함께 공유하고, 기준선과 후보·분모가 같은지 확인한다.
