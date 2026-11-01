@@ -1,7 +1,7 @@
 # DateMate
 
 서울·수도권 데이트 장소 추천 프로젝트. AI-Hub 여행로그 2022·2023 데이터를 사용한다.
-공통 전처리와 CBF 구현이 main에 반영되어 있다. CF·Hybrid는 담당 브랜치에서 진행 중이며, 모델 비교는 [공통 평가 v1.1](docs/evaluation.md)을 기준으로 맞춘다.
+공통 전처리, CBF·CF 구현과 [공통 평가 v1.1](docs/evaluation.md)을 사용한다. Hybrid는 담당 브랜치에서 실제 점수 연결을 진행한다.
 
 ## 실행 환경
 
@@ -58,6 +58,7 @@ python scripts/protocol_summary.py --year 2022
 python scripts/eval_protocol.py --year 2022 --split validation --candidate-mode warm
 python scripts/eval_protocol.py --year 2022 --split validation --candidate-mode all
 python scripts/cbf.py --year 2022 --candidate-mode both
+python scripts/cf.py --year 2022 --tune --candidate-mode both
 ```
 
 Test 평가는 validation에서 설정을 확정한 뒤 진행한다. 코드 변경 검증에서 측정한 값은 최종 성능으로 쓰지 않는다.
@@ -80,6 +81,7 @@ python scripts/validate_common_dataset.py --input-dir outputs/synthetic_processe
 - [공통 데이터 명세](docs/data_spec.md)
 - [데이터 검증 보고서](reports/dataset_validation.md)
 - [재현 확인 결과](docs/verification.md)
+- [CF 통합·재실험 결과](reports/CF_Integration_v1_1.md)
 - [데이터 이용 안내](docs/data_access.md)
 
 실제 커플의 공동 만족도 정답은 없어 개인 추천 평가와 사용자 쌍 시연은 구분한다. 장소 정보는 전체기간 로그로 통합했으므로 엄격한 시점별 평가에는 추가 전처리가 필요하다. 자세한 범위는 평가 기준에 적었다.
