@@ -82,6 +82,7 @@ python scripts/validate_common_dataset.py --input-dir outputs/synthetic_processe
 - [데이터 검증 보고서](reports/dataset_validation.md)
 - [재현 확인 결과](docs/verification.md)
 - [CF 통합·재실험 결과](reports/CF_Integration_v1_1.md)
+- [CBF 공통 평가 재실험](reports/CBF_Experiment_v1_1.md)
 - [데이터 이용 안내](docs/data_access.md)
 
 실제 커플의 공동 만족도 정답은 없어 개인 추천 평가와 사용자 쌍 시연은 구분한다. 장소 정보는 전체기간 로그로 통합했으므로 엄격한 시점별 평가에는 추가 전처리가 필요하다. 자세한 범위는 평가 기준에 적었다.
