@@ -175,7 +175,8 @@ def evaluate(d, model: ScoreModel, split, top_n=100):
     c_idx = pd.Series(np.arange(len(cand)), index=cand)
 
     # 후보에서 그 사용자의 train 장소 제외 (-inf = 추천 불가)
-    t = d["train"][d["train"].user_id.isin(users)]
+    history = d.get("history", d["train"])
+    t = history[history.user_id.isin(users)]
     t = t[t.place_id.isin(set(cand))]
     S[u_idx[t.user_id].to_numpy(), c_idx[t.place_id].to_numpy()] = -np.inf
     seen_counts = t.groupby("user_id").place_id.nunique().reindex(users, fill_value=0).to_numpy()
@@ -215,7 +216,7 @@ def evaluate(d, model: ScoreModel, split, top_n=100):
         relevant_total=int(rel_total.sum()), relevant_warm=int(rel_warm.sum()),
         relevant_cold=int(rel_total.sum() - rel_warm.sum()),
         warm_ranked_users=int(ok_warm.sum()), candidates=len(cand),
-        protocol_version=CFG["protocol_version"], candidate_mode=d.get("candidate_mode", "warm"),
+        protocol_version=d.get("protocol_version", CFG["protocol_version"]), candidate_mode=d.get("candidate_mode", "warm"),
         ranking_k_requested=K, ranking_k_effective=effective_k,
         users_with_fewer_than_k_candidates=int((available_counts < K).sum()),
         candidates_per_user_available_mean=float(available_counts.mean()),
@@ -286,7 +287,8 @@ def save_results(d, name, split, metrics, preds, input_dir, params, seconds):
     out.mkdir(parents=True, exist_ok=True)
     config = dict(model=name, params=params, year=d["year"], split=split, experiment=CFG,
                   candidate_mode=d.get("candidate_mode", "warm"),
-                  protocol=d.get("protocol", f"known_user_{d['year']}"))
+                  protocol=d.get("protocol", f"known_user_{d['year']}"),
+                  protocol_version=d.get("protocol_version", CFG["protocol_version"]))
     cfg_text = json.dumps(config, sort_keys=True, ensure_ascii=False)
     (out / "config.json").write_text(json.dumps(config, indent=2, ensure_ascii=False), encoding="utf-8")
     relevant = d[split][d[split].rating >= REL]
