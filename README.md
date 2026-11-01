@@ -1,16 +1,16 @@
 # DateMate
 
 서울·수도권 데이트 장소 추천 프로젝트. AI-Hub 여행로그 2022·2023 데이터를 사용한다.
-현재 공통 전처리까지 완료했다. 역할을 정한 뒤 이 데이터를 기준으로 CBF·CF·Hybrid를 구현하고 비교하면 된다.
+공통 전처리, CBF·CF 구현과 [공통 평가 v1.1](docs/evaluation.md)을 사용한다. Hybrid는 담당 브랜치에서 실제 점수 연결을 진행한다.
 
 ## 실행 환경
 
-Python 3.10 이상.
+모델 실험은 Python 3.11을 권장한다(CI 기준). 전처리 스크립트는 Python 3.10 이상에서 실행할 수 있다. 현재 고정한 실험 패키지는 Python 3.14용이 아니다.
 
 ```sh
 git clone https://github.com/sxhlxxn-p/datemate.git
 cd datemate
-python3 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
@@ -51,7 +51,31 @@ python scripts/validate_common_dataset.py
 
 반복 방문 집계는 분할 후에 한다. TF-IDF·스케일러·평균·인기도는 train에서만 계산한다. `places.csv`의 전체기간 평균 평점·방문 수와 `users.csv`의 `interaction_count`는 입력 특성에서 제외한다.
 
+Warm 후보 7,172곳과 all 후보 16,764곳은 별도 실험으로 실행한다(2022 기준). warm validation NDCG로 설정을 고른 뒤 같은 설정을 두 모드에 사용한다.
+
+```sh
+python scripts/protocol_summary.py --year 2022
+python scripts/eval_protocol.py --year 2022 --split validation --candidate-mode warm
+python scripts/eval_protocol.py --year 2022 --split validation --candidate-mode all
+python scripts/cbf.py --year 2022 --candidate-mode both
+python scripts/cf.py --year 2022 --tune --candidate-mode both
+```
+
+Test 평가는 validation에서 설정을 확정한 뒤 진행한다. 코드 변경 검증에서 측정한 값은 최종 성능으로 쓰지 않는다.
+
 후보 집합과 지표 계산은 [평가 기준](docs/evaluation.md), 파라미터 범위는 [실험 설정](configs/experiment.json)을 따른다. 역할별 작업과 PR에 넣을 내용은 [협업 안내](CONTRIBUTING.md)에 정리했다.
+
+## 2023 신규 사용자 외부 평가
+
+2022로 장소 사전과 모델을 고정하고 2023 사용자의 초기 방문 3곳 이후를 예측하는 별도 평가다. 기존 v1.1 데이터와 결과를 덮어쓰지 않는다.
+
+```sh
+python scripts/external_evaluation.py --stage prepare --raw-dir "/path/to/data"
+python scripts/external_evaluation.py --stage tune
+python scripts/external_evaluation.py --stage evaluate
+```
+
+분할·후보·누수 방지 규칙은 [외부 평가 안내](docs/external_evaluation_v2.md), 실행 결과와 한계는 [2023 외부 평가 보고서](reports/External_Evaluation_v2.md)를 참고한다. 초기 입력이 충분한 일부 사용자만 평가하며, 후보 밖 정답이 많아 결과 해석에 주의가 필요하다.
 
 ## 데이터 없이 동작 확인
 
@@ -69,6 +93,8 @@ python scripts/validate_common_dataset.py --input-dir outputs/synthetic_processe
 - [공통 데이터 명세](docs/data_spec.md)
 - [데이터 검증 보고서](reports/dataset_validation.md)
 - [재현 확인 결과](docs/verification.md)
+- [CF 통합·재실험 결과](reports/CF_Integration_v1_1.md)
+- [CBF 공통 평가 재실험](reports/CBF_Experiment_v1_1.md)
 - [데이터 이용 안내](docs/data_access.md)
 
 실제 커플의 공동 만족도 정답은 없어 개인 추천 평가와 사용자 쌍 시연은 구분한다. 장소 정보는 전체기간 로그로 통합했으므로 엄격한 시점별 평가에는 추가 전처리가 필요하다. 자세한 범위는 평가 기준에 적었다.

@@ -1,0 +1,24 @@
+{
+  "protocol_version": "external_v2",
+  "fit_year": "2022",
+  "external_year": "2023",
+  "support_min_unique_places": 3,
+  "support_cutoff": "end_of_day_of_third_distinct_eligible_place",
+  "query": "strictly_later_days_and_places_not_in_support",
+  "catalog": "2022_visit_rows_only_no_poi_master",
+  "external_candidate_modes": [
+    "warm_2022",
+    "catalog_2022"
+  ],
+  "selection": "2022_warm_validation_ndcg_at_10_warm",
+  "cf_k_grid": [
+    10,
+    20,
+    40
+  ],
+  "seed": 42,
+  "k": 10,
+  "relevance_rating_gte": 4,
+  "c_part": "excluded",
+  "cf_fallback": "user_level_popularity_only_when_no_unseen_CF_candidate_has_a_score"
+}
