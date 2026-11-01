@@ -65,6 +65,14 @@ class CBF:
         cand = d["cand"]
         self.cand, self.train = cand, d["train"]
         ids = tables["name"].index
+        missing = set(cand) - set(ids)
+        if missing:
+            raise ValueError(f"places.csv is missing {len(missing)} candidate place_id values")
+        train_outside_candidates = set(self.train.place_id) - set(cand)
+        if train_outside_candidates:
+            raise ValueError(
+                f"train contains {len(train_outside_candidates)} places outside the candidate set"
+            )
         # 이름 TF-IDF: 어휘와 IDF 는 train 장소 이름으로만 학습하고 나머지 장소는 transform 만 함
         if self.name_mode == "word":
             tv = TfidfVectorizer(analyzer="word")
@@ -91,7 +99,8 @@ class CBF:
         return self
 
     def score(self, users, cand):
-        assert len(cand) == len(self.cand) and (cand == self.cand).all(), "candidate order changed"
+        if not np.array_equal(cand, self.cand):
+            raise ValueError("candidate order changed")
         t = self.train[self.train.user_id.isin(users)]
         w = t.rating
         if self.weighting == "centered":                          # 평점 - 사용자 평균: '평균보다 좋았던' 곳을 강조
