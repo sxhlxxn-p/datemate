@@ -200,7 +200,7 @@ def evaluate(d, model: ScoreModel, split, top_n=100):
     hits, dcg = hit.sum(1), (hit * discounts).sum(1)
     warm_hit = hit & warm_columns[top]
     warm_hits, warm_dcg = warm_hit.sum(1), (warm_hit * discounts).sum(1)
-    ideal = lambda n: discounts[:min(effective_k, int(n))].sum()  # 이상적 DCG: 1 을 min(K, 정답 수)개
+    ideal = lambda n: DISC[:min(K, int(n))].sum()  # 이상적 DCG: 1 을 min(K, 정답 수)개
     idcg_all = np.array([ideal(n) for n in rel_total])
     idcg_warm = np.array([ideal(n) for n in rel_warm])
 

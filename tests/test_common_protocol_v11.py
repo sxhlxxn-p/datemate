@@ -81,6 +81,14 @@ class CommonProtocolTests(unittest.TestCase):
         _, p = ep.evaluate(d, Model(np.zeros((2, 4))), 'validation')
         self.assertEqual(p[p.user_id == 'u1'].place_id.tolist(), ['p1', 'p2', 'p3'])
 
+    def test_idcg_uses_all_relevant_targets_even_when_candidates_are_few(self):
+        d = data()
+        d['validation'] = pd.DataFrame([('u1', p, 5.) for p in ('p1', 'cold2', 'cold3', 'cold4', 'cold5')],
+                                       columns=d['train'].columns)
+        m, _ = ep.evaluate(d, Model([[0, 1]]), 'validation')
+        self.assertEqual(m['recall_at_10'], .2)
+        self.assertAlmostEqual(m['ndcg_at_10'], 1 / ep.DISC[:5].sum())
+
     def test_load_all_uses_fixed_candidate_flag_and_means_after_split(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
