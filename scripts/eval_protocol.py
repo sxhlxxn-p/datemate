@@ -24,9 +24,12 @@ import platform
 import subprocess
 import sys
 import time
+from typing import Protocol
 
 import numpy as np
 import pandas as pd
+import scipy
+import sklearn
 
 ROOT = Path(__file__).resolve().parents[1]
 CFG = json.loads((ROOT / "configs/experiment.json").read_text(encoding="utf-8"))
@@ -53,7 +56,9 @@ def load_data(year, input_dir):
     test = pairs([CFG["final_label"]])
     # 같은 사용자-장소는 한 분할에만 있어야 함 (누수 점검)
     key = lambda p: set(zip(p.user_id, p.place_id))
-    assert not (key(train) & key(val) or key(train) & key(test) or key(val) & key(test)), "pair in two splits"
+    overlaps = (key(train) & key(val)) | (key(train) & key(test)) | (key(val) & key(test))
+    if overlaps:
+        raise ValueError(f"{len(overlaps)} user-place pairs occur in multiple splits")
     # 후보 = 같은 해 train/train_only 에 있는 장소 전체. 사전순으로 정렬해 두면
     # '열 순서 = place_id 사전순' 이 되어 안정 정렬만으로 동점 규칙이 지켜짐.
     cand = np.array(sorted(train.place_id.unique()))
@@ -93,14 +98,48 @@ class Baseline:
         return self.item_mean.reindex(places).to_numpy()
 
 
+class ScoreModel(Protocol):
+    """Common interface used for CBF, CF, hybrid models, and baselines.
+
+    ``score`` must preserve the supplied user/candidate order. ``-inf`` is the
+    only supported marker for an unscorable recommendation; NaN and +inf are
+    rejected. ``predict`` may use NaN for unsupported rating pairs.
+    """
+
+    def score(self, users: np.ndarray, candidates: np.ndarray) -> np.ndarray:
+        ...
+
+    def predict(self, users: np.ndarray, places: np.ndarray) -> np.ndarray | None:
+        ...
+
+
+def checked_scores(model: ScoreModel, users: np.ndarray, candidates: np.ndarray) -> np.ndarray:
+    """Return an owned, validated score matrix so masking cannot mutate a model cache."""
+
+    scores = np.array(model.score(users, candidates), dtype=float, copy=True)
+    expected = (len(users), len(candidates))
+    if scores.shape != expected:
+        raise ValueError(f"score() returned shape {scores.shape}; expected {expected}")
+    if np.isnan(scores).any():
+        raise ValueError("score() returned NaN; use -inf for unsupported candidates")
+    if np.isposinf(scores).any():
+        raise ValueError("score() returned +inf; scores must be finite or -inf")
+    return scores
+
+
 # ------------------------------------------------------------------ 평가
-def evaluate(d, model, split, top_n=100):
+def evaluate(d, model: ScoreModel, split, top_n=100):
     """모델 하나를 한 분할(validation 또는 test)에서 평가함. (metrics dict, predictions DataFrame) 반환."""
+    if top_n < 0:
+        raise ValueError("top_n must be zero or positive")
     ev = d[split]
     users = np.array(sorted(ev.user_id.unique()))        # 평가 사용자 = 이 분할에 쌍이 있는 사용자
     cand = d["cand"]
-    S = np.asarray(model.score(users, cand), dtype=float)
-    assert S.shape == (len(users), len(cand)) and not np.isnan(S).any(), "bad score matrix"
+    if len(users) == 0:
+        raise ValueError(f"split {split!r} has no evaluation users")
+    if len(cand) == 0:
+        raise ValueError("candidate set is empty")
+    S = checked_scores(model, users, cand)
     u_idx = pd.Series(np.arange(len(users)), index=users)
     c_idx = pd.Series(np.arange(len(cand)), index=cand)
 
@@ -117,22 +156,24 @@ def evaluate(d, model, split, top_n=100):
     rel_warm = R.sum(1)
 
     # 점수 높은 순. 안정 정렬이라 같은 점수는 열 순서(= place_id 사전순)가 유지됨.
-    order = np.argsort(-S, axis=1, kind="stable")[:, :max(K, top_n)]
-    top = order[:, :K]
-    hit = np.take_along_axis(R, top, 1)                           # (사용자, K) 적중 여부
-    hits, dcg = hit.sum(1), (hit * DISC).sum(1)
-    ideal = lambda n: DISC[:min(K, int(n))].sum()                 # 이상적 DCG: 1 을 min(K, 정답 수)개
+    effective_k = min(K, len(cand))
+    top = np.argsort(-S, axis=1, kind="stable")[:, :effective_k]
+    hit = np.take_along_axis(R, top, 1)                           # (사용자, effective_k) 적중 여부
+    discounts = DISC[:effective_k]
+    hits, dcg = hit.sum(1), (hit * discounts).sum(1)
+    ideal = lambda n: discounts[:min(effective_k, int(n))].sum()  # 이상적 DCG: 1 을 min(K, 정답 수)개
     idcg_all = np.array([ideal(n) for n in rel_total])
     idcg_warm = np.array([ideal(n) for n in rel_warm])
 
     ok_all, ok_warm = rel_total > 0, rel_warm > 0                 # 정답 0 인 사용자는 분모에서 제외
     valid = np.isfinite(np.take_along_axis(S, top, 1))            # 유효 추천(-inf 아님)
-    full_k = valid.sum(1) == K
+    full_k = valid.sum(1) == effective_k
     m = dict(
         eval_users=len(users), users_without_relevant=int((~ok_all).sum()), ranked_users=int(ok_all.sum()),
         relevant_total=int(rel_total.sum()), relevant_warm=int(rel_warm.sum()),
         relevant_cold=int(rel_total.sum() - rel_warm.sum()),
         warm_ranked_users=int(ok_warm.sum()), candidates=len(cand),
+        ranking_k_requested=K, ranking_k_effective=effective_k,
         candidates_per_user_mean=float(np.isfinite(S).sum(1).mean()), train_pairs=len(d["train"]),
         eval_pairs=len(ev),
         recall_at_10=float((hits[ok_all] / rel_total[ok_all]).mean()),          # 전체 (cold 정답은 miss)
@@ -148,6 +189,11 @@ def evaluate(d, model, split, top_n=100):
     if p is None:
         m.update(mae=None, rmse=None, mae_supported=None, rmse_supported=None, rating_supported_pairs=0)
     else:
+        p = np.asarray(p, dtype=float)
+        if p.shape != (len(ev),):
+            raise ValueError(f"predict() returned shape {p.shape}; expected {(len(ev),)}")
+        if np.isinf(p).any():
+            raise ValueError("predict() returned an infinite rating")
         sup = ~np.isnan(p)
         y = ev.rating.to_numpy()
         full = np.clip(np.where(sup, p, d["global_mean"]), 1, 5)
@@ -198,12 +244,17 @@ def save_results(d, name, split, metrics, preds, input_dir, params, seconds):
                 config_sha256=hashlib.sha256(cfg_text.encode("utf-8")).hexdigest(),
                 data_sha256={f: sha256(input_dir / f) for f in ("interactions.csv", "places.csv", "users.csv")},
                 python=platform.python_version(), pandas=pd.__version__, numpy=np.__version__,
+                scipy=scipy.__version__, scikit_learn=sklearn.__version__,
                 seconds=round(seconds, 2))
     (out / "metrics.json").write_text(json.dumps(dict(meta=meta, metrics=metrics), indent=2, ensure_ascii=False),
                                       encoding="utf-8")
     preds.to_csv(out / "predictions.csv", index=False, encoding="utf-8")
-    (out / "environment.txt").write_text(f"python {sys.version}\nplatform {platform.platform()}\n"
-                                         f"pandas {pd.__version__}\nnumpy {np.__version__}\n", encoding="utf-8")
+    (out / "environment.txt").write_text(
+        f"python {sys.version}\nplatform {platform.platform()}\n"
+        f"pandas {pd.__version__}\nnumpy {np.__version__}\n"
+        f"scipy {scipy.__version__}\nscikit-learn {sklearn.__version__}\n",
+        encoding="utf-8",
+    )
     return out
 
 
