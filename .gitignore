@@ -44,3 +44,5 @@ venv/
 # Reviewed aggregate model comparisons only; row-level records remain excluded.
 !/reports/test_model_comparison.csv
 !/reports/validation_k_comparison.csv
+!/reports/final_model_comparison_2022.csv
+!/reports/final_hybrid_2023.csv

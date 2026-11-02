@@ -36,14 +36,16 @@
 
 Hybrid는 CF보다 높지만 인기순보다 낮다. alpha=0.00이므로 Hybrid 고유의 성능 향상은 확인되지 않았다.
 
-## 2023 validation
+## 2023 validation과 최종 test
 
-| 후보 | Recall@10 | NDCG@10 | Warm NDCG@10 |
-|---|---:|---:|---:|
-| warm | 0.051625 | 0.026404 | 0.055795 |
-| all | 0.049713 | 0.022258 | 0.029189 |
+| 분할 | 후보 | Recall@10 | NDCG@10 | Warm NDCG@10 |
+|---|---|---:|---:|---:|
+| validation | warm | 0.051625 | 0.026404 | 0.055795 |
+| validation | all | 0.049713 | 0.022258 | 0.029189 |
+| test | warm | 0.025257 | 0.011514 | 0.026244 |
+| test | all | 0.027128 | 0.013011 | 0.014521 |
 
-2023은 alpha=0.40이 선택되어 CBF와 CF가 실제로 결합된다. 이 수치는 연도 내 validation 결과이며, 2022 학습에서 2023으로 이동하는 외부 평가는 아니다.
+2023은 alpha=0.40이 선택되어 CBF와 CF가 실제로 결합된다. test는 alpha를 고른 뒤 처음 확인한 held-out 결과다. validation보다 test 지표가 낮아졌으며, 2022 학습에서 2023으로 이동하는 외부 평가와는 별개의 연도 내 실험이다.
 
 ## 커플 추천 시연
 
@@ -55,7 +57,7 @@ Hybrid는 CF보다 높지만 인기순보다 낮다. alpha=0.00이므로 Hybrid 
 
 ```sh
 python scripts/run_hybrid_real.py --year 2022 --final-test
-python scripts/run_hybrid_real.py --year 2023
+python scripts/run_hybrid_real.py --year 2023 --final-test
 python scripts/run_couple_demo.py --year 2022 --candidate-mode all
 ```
 
@@ -63,7 +65,8 @@ python scripts/run_couple_demo.py --year 2022 --candidate-mode all
 
 ## 검증
 
-- `python -m unittest discover -s tests -v`: 33개 통과
+- `python -m unittest discover -s tests -v`: 37개 통과
 - 2022 alpha 선택, warm/all validation 및 test 재현 완료
-- 2023 alpha 선택과 warm/all validation 재현 완료
+- 2023 alpha 선택과 warm/all validation 및 test 재현 완료
+- clean 커밋 `ce0d136`과 동일 데이터에서 기준선·CBF·CF·Hybrid 재실행 완료
 - 실제 두 사용자 mean/min Top-10 시연 완료
