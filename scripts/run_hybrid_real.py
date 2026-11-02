@@ -5,6 +5,7 @@ Place in scripts/run_hybrid_real.py and run from repository root.
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -31,6 +32,11 @@ class Hybrid:
         valid = np.isfinite(f)
         if ((f[valid] < 1-1e-8) | (f[valid] > 5+1e-8)).any():
             raise ValueError("CF score outside [1, 5]")
+        # alpha=0 is the CBF endpoint. Returning its scores unchanged preserves
+        # exact ties; applying an affine transform can collapse adjacent floats
+        # and make the endpoint appear (slightly) different from CBF.
+        if self.alpha == 0:
+            return c
         cn = np.clip((c + 1) / 2, 0, 1)
         # Compute only supported cells; -inf is never normalized.
         cn[valid] = ((1 - self.alpha) * cn[valid]
@@ -76,7 +82,16 @@ def main():
     for mode in ('warm', 'all'):
         d = ep.load_data(args.year, args.input_dir, mode)
         for split in (('validation', 'test') if args.final_test else ('validation',)):
-            metrics, _ = ep.evaluate(d, Hybrid(cbf, cf, best), split, top_n=10)
+            started = time.perf_counter()
+            metrics, predictions = ep.evaluate(d, Hybrid(cbf, cf, best), split, top_n=10)
+            params = {'alpha': best, 'cf_k': args.cf_k,
+                      'cbf': {'name_mode': 'char', 'w_type': 0.5,
+                              'w_region': 0.5, 'weighting': 'raw'},
+                      'normalization': {'cbf': [-1, 1], 'cf': [1, 5]},
+                      'cf_fallback': 'cbf', 'top_n': 10}
+            saved = ep.save_results(d, 'hybrid', split, metrics, predictions,
+                                    args.input_dir, params,
+                                    time.perf_counter() - started)
             out = args.output_dir / f'{args.year}_{mode}_{split}_metrics.json'
             out.write_text(json.dumps({'year': args.year, 'candidate_mode': mode,
                                        'split': split, 'alpha': best,
@@ -85,6 +100,7 @@ def main():
             print(f"{mode}/{split}: recall@10={metrics['recall_at_10']:.6f} "
                   f"ndcg@10={metrics['ndcg_at_10']:.6f} "
                   f"warm_ndcg@10={metrics['ndcg_at_10_warm']:.6f}", flush=True)
+            print(f"  protocol bundle: {saved.relative_to(ep.ROOT).as_posix()}", flush=True)
     print(f'Results saved: {args.output_dir}', flush=True)
 
 

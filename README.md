@@ -1,7 +1,7 @@
 # DateMate
 
 서울·수도권 데이트 장소 추천 프로젝트. AI-Hub 여행로그 2022·2023 데이터를 사용한다.
-공통 전처리, CBF·CF 구현과 [공통 평가 v1.1](docs/evaluation.md)을 사용한다. Hybrid는 담당 브랜치에서 실제 점수 연결을 진행한다.
+공통 전처리, CBF·CF·Hybrid 구현과 [공통 평가 v1.1](docs/evaluation.md)을 사용한다.
 
 ## 실행 환경
 
@@ -59,11 +59,13 @@ python scripts/eval_protocol.py --year 2022 --split validation --candidate-mode 
 python scripts/eval_protocol.py --year 2022 --split validation --candidate-mode all
 python scripts/cbf.py --year 2022 --candidate-mode both
 python scripts/cf.py --year 2022 --tune --candidate-mode both
+python scripts/run_hybrid_real.py --year 2022 --final-test
+python scripts/run_couple_demo.py --year 2022 --candidate-mode all
 ```
 
 Test 평가는 validation에서 설정을 확정한 뒤 진행한다. 코드 변경 검증에서 측정한 값은 최종 성능으로 쓰지 않는다.
 
-후보 집합과 지표 계산은 [평가 기준](docs/evaluation.md), 파라미터 범위는 [실험 설정](configs/experiment.json)을 따른다. 역할별 작업과 PR에 넣을 내용은 [협업 안내](CONTRIBUTING.md)에 정리했다.
+후보 집합과 지표 계산은 [평가 기준](docs/evaluation.md), 파라미터 범위는 [실험 설정](configs/experiment.json)을 따른다. Hybrid 결과와 해석은 [Hybrid 실험 보고서](reports/Hybrid_Experiment_Results.md), 역할별 작업과 PR에 넣을 내용은 [협업 안내](CONTRIBUTING.md)에 정리했다.
 
 ## 2023 신규 사용자 외부 평가
 
