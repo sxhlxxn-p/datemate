@@ -60,12 +60,14 @@ python scripts/eval_protocol.py --year 2022 --split validation --candidate-mode 
 python scripts/cbf.py --year 2022 --candidate-mode both
 python scripts/cf.py --year 2022 --tune --candidate-mode both
 python scripts/run_hybrid_real.py --year 2022 --final-test
+python scripts/run_hybrid_real.py --year 2023 --final-test
+python scripts/build_final_evaluation_summary.py
 python scripts/run_couple_demo.py --year 2022 --candidate-mode all
 ```
 
 Test 평가는 validation에서 설정을 확정한 뒤 진행한다. 코드 변경 검증에서 측정한 값은 최종 성능으로 쓰지 않는다.
 
-후보 집합과 지표 계산은 [평가 기준](docs/evaluation.md), 파라미터 범위는 [실험 설정](configs/experiment.json)을 따른다. Hybrid 결과와 해석은 [Hybrid 실험 보고서](reports/Hybrid_Experiment_Results.md), 역할별 작업과 PR에 넣을 내용은 [협업 안내](CONTRIBUTING.md)에 정리했다.
+후보 집합과 지표 계산은 [평가 기준](docs/evaluation.md), 파라미터 범위는 [실험 설정](configs/experiment.json)을 따른다. 최종 모델 비교와 해석은 [최종 평가 보고서](reports/Final_Model_Evaluation.md), Hybrid 상세 결과는 [Hybrid 실험 보고서](reports/Hybrid_Experiment_Results.md), 역할별 작업과 PR에 넣을 내용은 [협업 안내](CONTRIBUTING.md)에 정리했다. 집계 스크립트는 같은 후보 모드 안에서 데이터·후보·평가 대상·Git 커밋 해시가 일치하고 실행 기록이 clean인지 확인한 뒤 보고서용 CSV와 JSON을 만든다.
 
 ## 2023 신규 사용자 외부 평가
 
@@ -97,6 +99,7 @@ python scripts/validate_common_dataset.py --input-dir outputs/synthetic_processe
 - [재현 확인 결과](docs/verification.md)
 - [CF 통합·재실험 결과](reports/CF_Integration_v1_1.md)
 - [CBF 공통 평가 재실험](reports/CBF_Experiment_v1_1.md)
+- [최종 모델 평가](reports/Final_Model_Evaluation.md)
 - [데이터 이용 안내](docs/data_access.md)
 
 실제 커플의 공동 만족도 정답은 없어 개인 추천 평가와 사용자 쌍 시연은 구분한다. 장소 정보는 전체기간 로그로 통합했으므로 엄격한 시점별 평가에는 추가 전처리가 필요하다. 자세한 범위는 평가 기준에 적었다.

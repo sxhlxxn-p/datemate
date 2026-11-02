@@ -38,6 +38,6 @@ python scripts/cf.py --year 2022 --tune --candidate-mode both
 python scripts/cf.py --year 2022 --k 40 --split test --candidate-mode both
 ```
 
-Hybrid에 전체 유효 점수를 넘길 때는 `--predictions-top 0`을 추가한다. Top-100 교집합으로 후보를 줄이지 않고 공통 후보에 맞춰 연결한다. 현재 통합 확인에서는 개인별 파일 크기를 줄이기 위해 top 10만 저장했고, 실제 Hybrid 점수 연결은 아직 하지 않았다.
+Hybrid는 저장한 Top-N 파일의 교집합을 쓰지 않고, 같은 공통 후보 전체에 CBF와 CF의 `score()`를 직접 호출해 연결했다. CF가 점수를 내지 못한 셀만 CBF로 대체한다. 2022 validation에서는 alpha=0.00, 2023에서는 alpha=0.40이 선택됐다. 최종 결과는 [Hybrid 보고서](Hybrid_Experiment_Results.md)와 [최종 평가 보고서](Final_Model_Evaluation.md)에 있다.
 
-원본과 전처리 스키마·분할은 변경하지 않았다. 전체 테스트 19개를 통과했다.
+원본과 전처리 스키마·분할은 변경하지 않았다. D파트 최종 확인 시 전체 테스트 37개를 통과했다.

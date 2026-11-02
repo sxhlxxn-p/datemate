@@ -36,7 +36,7 @@
 
 Warm 열은 warm 후보와 warm-positive 570명, All 열은 전체 후보와 positive 1,069명 기준이다. 서로 분모·후보가 다르므로 모드 안에서 비교한다. 전체평균·장소평균 기준선의 랭킹 지표는 두 모드 모두 0이었다.
 
-지역 추가 CBF는 이번 test에서 CF보다 높았고 인기순보다는 낮았다. Hybrid가 CBF나 인기순보다 나은지는 아직 확인하지 않았다. 현재 all 실험은 두 연도 로그로 만든 고정 카탈로그를 사용하므로 실제 시점의 신규 장소 성능으로 해석하지 않는다.
+지역 추가 CBF는 이번 test에서 CF보다 높았고 인기순보다는 낮았다. 이후 Hybrid의 alpha를 validation에서 선택한 결과 2022에서는 0.00이 선택돼 Hybrid 순위와 지표가 지역 추가 CBF와 정확히 같았다. Hybrid 고유의 개선으로 해석하지 않는다. 현재 all 실험은 두 연도 로그로 만든 고정 카탈로그를 사용하므로 실제 시점의 신규 장소 성능으로 해석하지 않는다.
 
 CBF 두 모델 모두 유효 추천 10개 제공 비율은 1.0이었다. 기본 CBF의 item coverage는 warm 0.4689 / all 0.2727, 지역 추가 모델은 warm 0.4905 / all 0.1305였다. 이 값은 점수가 유한한지에 따른 제공 비율이며, 높은 추천 정확도나 모든 사용자의 충분한 취향 근거를 뜻하지 않는다. 코사인 점수 0인 후보도 동점 규칙으로 순위에 들어갈 수 있다.
 
@@ -58,6 +58,6 @@ CBF·지역 추가 CBF·CF·세 기준선의 데이터, 후보, 평가 쌍과 �
 python scripts/cbf.py --year 2022 --candidate-mode both --final-test --predictions-top 10
 ```
 
-선택 설정, 64개 validation 결과, 각 실행의 환경·해시·지표는 [cbf_v1_1_summary.json](cbf_v1_1_summary.json)에 있다. 실행 시 기존 비추적 파일 때문에 git dirty가 기록됐지만, 실험 코드가 source_revision의 추적 파일과 같은지 별도로 검사하고 코드 SHA-256도 남겼다. 기존 파일은 건드리지 않았다.
+선택 설정, 64개 validation 결과, 각 실행의 환경·해시·지표는 [cbf_v1_1_summary.json](cbf_v1_1_summary.json)에 있다. 최초 재실행은 기존 비추적 파일 때문에 git dirty가 기록됐지만, D파트 최종 확인에서는 clean 커밋 `ce0d136`에서 CBF와 다른 모델을 모두 다시 실행했다. 최종 비교는 [최종 평가 보고서](Final_Model_Evaluation.md)와 [검증된 집계 JSON](final_evaluation_summary.json)을 기준으로 한다.
 
 개인별 예측은 로컬 outputs에만 저장했다. 이번 top-10 출력은 결과 확인용이다. C파트는 전체 점수 파일을 별도 생성하거나 `CBF(...).fit()` 후 공통 후보에 `score()`를 직접 호출해 연결한다. Top-10/100 결과 교집합으로 평가 후보를 줄이지 않는다.
