@@ -81,6 +81,19 @@ python scripts/external_evaluation.py --stage evaluate
 
 분할·후보·누수 방지 규칙은 [외부 평가 안내](docs/external_evaluation_v2.md), 실행 결과와 한계는 [2023 외부 평가 보고서](reports/External_Evaluation_v2.md)를 참고한다. 초기 입력이 충분한 일부 사용자만 평가하며, 후보 밖 정답이 많아 결과 해석에 주의가 필요하다.
 
+## Matrix Factorization 선택 확장
+
+Proposal의 선택 확장으로 관측 평점만 학습하는 편향 포함 MF를 비교했다. 2022 validation에서 차원·정규화를 선택하고 내부 test와 별도의 신규 사용자 외부 평가를 실행한다.
+
+```sh
+python scripts/run_mf.py --stage tune --protocol internal
+python scripts/run_mf.py --stage evaluate --protocol internal
+python scripts/run_mf.py --stage tune --protocol external
+python scripts/run_mf.py --stage evaluate --protocol external
+```
+
+외부 평가는 먼저 external_v2 데이터를 준비해야 한다. [모델·실행 안내](docs/matrix_factorization.md)와 [MF 결과 보고서](reports/Matrix_Factorization_Results.md)를 참고한다. 이번 선택 모델은 강한 정규화로 잠재 요인 기여가 거의 없어졌고, 평점 오차 감소와 별개로 순위 성능 개선은 확인되지 않았다.
+
 ## 피드백 기반 전략 선택 확장
 
 CBF·Hybrid의 평균/최솟값 결합 중 하나를 선택하는 Contextual Bandit을 가상 피드백으로 실험한다. 실제 사용자 효과나 기존 오프라인 평가와는 구분한다. AI-Hub 데이터 없이 실행할 수 있다.
