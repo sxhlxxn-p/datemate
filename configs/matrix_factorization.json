@@ -1,0 +1,15 @@
+{
+  "method": "biased_explicit_observed_only_als",
+  "factors_grid": [8, 16],
+  "regularization_grid": [0.1, 1.0, 10.0],
+  "epochs": 20,
+  "seed": 42,
+  "selection": "2022 warm validation ndcg_at_10_warm",
+  "tie_break": "smaller factors then smaller regularization",
+  "bias_only_ablation": {"factors": 0, "reg": 1.0},
+  "unobserved": "missing, never zero or negative feedback",
+  "cold_user": "fold in with known training-item initial ratings; otherwise unsupported",
+  "cold_item": "unsupported",
+  "ranking_fallback": "none for pure MF; user-level popularity when zero scored unseen candidate in separate policy",
+  "rating_fallback": "common evaluator training mean; supported pairs reported separately"
+}
