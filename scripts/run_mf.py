@@ -15,6 +15,25 @@ CONFIG_PATH = ROOT/'configs/matrix_factorization.json'
 CONFIG = json.loads(CONFIG_PATH.read_text())
 
 
+class PopularityFallback:
+    """Route entire user only when no unseen MF candidate can be scored."""
+    def __init__(self, model, popularity, history):
+        self.model, self.popularity, self.history = model, popularity, history
+
+    def score(self, users, candidates):
+        scores = self.model.score(users, candidates)
+        masked = scores.copy()
+        ui = pd.Series(np.arange(len(users)), index=users)
+        ci = pd.Series(np.arange(len(candidates)), index=candidates)
+        seen = self.history[self.history.user_id.isin(users) & self.history.place_id.isin(candidates)]
+        masked[ui.loc[seen.user_id].to_numpy(), ci.loc[seen.place_id].to_numpy()] = -np.inf
+        available = np.isfinite(masked).any(1)
+        return np.where(available[:,None], scores, self.popularity.score(users,candidates))
+
+    def predict(self, users, places):
+        return None
+
+
 def write(path, value):
     path.parent.mkdir(parents=True,exist_ok=True)
     path.write_text(json.dumps(value,indent=2,ensure_ascii=False,allow_nan=False)+'\n')
@@ -73,7 +92,7 @@ def evaluate(data_dir,protocol,output):
             b=bias.with_history(d['history']) if new_users else bias
             popular=ep.Baseline('popularity').fit(warm)
             models={name:ep.Baseline(name).fit(warm) for name in ('global_mean','item_mean')}
-            models.update(popularity=popular,mf=mf,bias_only=b,mf_or_popularity=external.AvailabilityFallbackCF(mf,popular))
+            models.update(popularity=popular,mf=mf,bias_only=b,mf_or_popularity=PopularityFallback(mf,popular,d.get('history',d['train'])))
             for name,model in models.items():
                 start=time.perf_counter()
                 metrics,predictions=ep.evaluate(d,model,split,top_n=10)

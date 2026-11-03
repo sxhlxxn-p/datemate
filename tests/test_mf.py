@@ -70,7 +70,7 @@ class MFTests(unittest.TestCase):
     def test_common_evaluation_masks_support_and_retains_train_warmth(self):
         m=MatrixFactorization(2,1,5).fit(data()).with_history(frame([('new','a',5)]))
         d=dict(data(),history=frame([('new','a',5)]),external_test=frame([('new','b',5)]),
-               cand=np.array(['a','b','c','cold']),global_mean=3.5,candidate_mode='all')
+               cand=np.array(['a','b','c','cold']),global_mean=3.5,candidate_mode='all',year='2023')
         metrics,preds=ep.evaluate(d,m,'external_test',top_n=10)
         self.assertNotIn('a',set(preds.place_id));self.assertNotIn('cold',set(preds.place_id))
         self.assertEqual(metrics['relevant_warm'],1)
@@ -90,6 +90,16 @@ class MFTests(unittest.TestCase):
                 run_mf.tune(inp,'internal',path/'out')
                 result=run_mf.evaluate(inp,'internal',path/'out')
                 self.assertTrue(result['matching_input_manifests'])
+                frame([('new','a',5),('no_known','cold',4)]).to_csv(inp/'support.csv',index=False)
+                frame([('new','b',5),('no_known','c',5)]).to_csv(inp/'external_targets.csv',index=False)
+                run_mf.tune(inp,'external',path/'external')
+                ext=run_mf.evaluate(inp,'external',path/'external')
+                self.assertTrue(ext['matching_input_manifests'])
+                external_runs=[r for r in ext['runs'] if r['meta']['split']=='external_test']
+                pure=next(r for r in external_runs if r['meta']['model']=='mf')
+                fallback=next(r for r in external_runs if r['meta']['model']=='mf_or_popularity')
+                self.assertEqual(pure['metrics']['users_without_scores'],1)
+                self.assertEqual(fallback['metrics']['users_without_scores'],0)
                 (inp/'users.csv').write_text('user_id\nmodified\n')
                 with self.assertRaisesRegex(ValueError,'changed'):run_mf.evaluate(inp,'internal',path/'out')
 
