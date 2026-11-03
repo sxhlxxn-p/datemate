@@ -81,6 +81,16 @@ python scripts/external_evaluation.py --stage evaluate
 
 분할·후보·누수 방지 규칙은 [외부 평가 안내](docs/external_evaluation_v2.md), 실행 결과와 한계는 [2023 외부 평가 보고서](reports/External_Evaluation_v2.md)를 참고한다. 초기 입력이 충분한 일부 사용자만 평가하며, 후보 밖 정답이 많아 결과 해석에 주의가 필요하다.
 
+## 피드백 기반 전략 선택 확장
+
+CBF·Hybrid의 평균/최솟값 결합 중 하나를 선택하는 Contextual Bandit을 가상 피드백으로 실험한다. 실제 사용자 효과나 기존 오프라인 평가와는 구분한다. AI-Hub 데이터 없이 실행할 수 있다.
+
+```sh
+python scripts/run_bandit_simulation.py
+```
+
+[구성과 실제 점수 연결 방법](docs/contextual_bandit.md), [실험 결과와 한계](reports/Contextual_Bandit_Simulation.md)를 참고한다. 이번 설정에서 적응 정책은 고정 Hybrid 평균 결합보다 높지 않았다.
+
 ## 데이터 없이 동작 확인
 
 아래 샘플은 실제 기록을 사용하지 않은 가상 데이터다. 공통 전처리는 별도 패키지 없이 실행된다.

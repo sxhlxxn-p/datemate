@@ -1,0 +1,14 @@
+{
+  "version": "bandit_simulation_v1",
+  "seeds": 20,
+  "seed_start": 100,
+  "train_rounds": 3000,
+  "test_rounds": 1000,
+  "candidates": 40,
+  "slate_size": 5,
+  "epsilon": 0.1,
+  "hybrid_alpha": 0.4,
+  "scenarios": ["informative", "noisy", "uninformative"],
+  "reward": "Bernoulli(mean of latent partner acceptance probability products over slate)",
+  "scope": "synthetic only; independent couples per round; no travel records or real satisfaction claims"
+}
